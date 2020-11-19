@@ -1,0 +1,4 @@
+.vscode
+*.tgz
+cmd/reds_loader/reds_mapping.json
+kubernetes/cray-hms-reds/helm
