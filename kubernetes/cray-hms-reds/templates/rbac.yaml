@@ -1,0 +1,32 @@
+## jobs-watcher service account is a generic sa useful for InitContainers that
+## want to watch for state of Job and wait until the job is completed
+## jobs-watcher service account is available in "services" namespace
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cray-reds-init-crb
+subjects:
+- kind: ServiceAccount
+  name: cray-reds-init
+  namespace: services
+roleRef:
+  kind: ClusterRole
+  name: cray-reds-init-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  namespace: services
+  name: cray-reds-init
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cray-reds-init-role
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "services"]
+  resourceNames: ["reds-init-configmap", "api-gateway", "istio-ingressgateway"]
+  verbs: ["update", "get", "patch"]

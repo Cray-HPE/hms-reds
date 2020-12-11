@@ -1,0 +1,94 @@
+GET https://slice-sms.us.cray.com:30443/apis/reds/v1/ HTTP/1.1
+###
+GET https://slice-sms1.us.cray.com:30443/apis/reds/v1/admin/credentials HTTP/1.1
+###
+PUT https://slice-sms.us.cray.com:30443/apis/reds/v1/admin/credentials HTTP/1.1
+content-type: application/json
+
+{
+    "username": "admin",
+    "password": "tertial"
+}
+###
+DELETE https://slice-sms.us.cray.com:30443/apis/reds/v1/admin/credentials HTTP/1.1
+###
+PUT https://slice-sms.us.cray.com:30443/apis/reds/v1/admin/credentials HTTP/1.1
+content-type: application/json
+
+{
+    "username": "groot",
+    "password": "terminal6"
+}
+###
+POST  https://slice-sms.us.cray.com:30443/apis/reds/v1/credentials HTTP/1.1
+content-type: application/json
+
+{
+	"addresses": [
+		{
+			"macAddress": "a4bf01560702",
+			"IPAddresses": []
+		},
+		{
+			"macAddress": "a4bf01560703",
+			"IPAddresses": [],
+			"macAddress": "a4bf013ee093",
+			"IPAddresses": [
+				{
+					"addressType": "IPv4",
+					"address": "10.2.0.1"
+				}
+			]
+		},
+		{
+			"macAddress": "a4bf01560704",
+			"macAddress": "a4bf013eefd7",
+			"IPAddresses": [
+				{
+					"addressType": "IPv4",
+					"address": "10.4.0.5",
+					"address": "10.2.0.2"
+				}
+			]
+		}
+	]
+}
+###
+POST  https://slice-sms.us.cray.com:30443/apis/reds/v1/credentials HTTP/1.1
+
+{
+	"addresses": [
+		},
+		{
+			"macAddress": "00beef151337",
+			"macAddress": "a4bf013ef9cd",
+			"IPAddresses": [
+				{
+					"addressType": "IPv4",
+					"address": "0.0.0.0"
+				},
+				{
+					"addressType": "IPv6",
+					"address": "1:20:300:4000:5:60:700:8000",
+					"address": "10.2.0.3"
+				}
+			]
+		},
+		{
+			"macAddress": "00d00d15af00",
+			"macAddress": "a4bf013eca61",
+			"IPAddresses": [
+				{
+					"addressType": "IPv4",
+					"address": "1.2.3.4"
+				},
+				{
+					"addressType": "IPv6",
+					"address": "8:70:600:5000:4:30:200:1000",
+					"address": "10.2.0.4"
+				}
+			]
+		}
+	]
+}
+}
