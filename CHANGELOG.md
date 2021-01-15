@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [1.17.0] - 2021-01-14
+
+### Changed
+
+- Updated license file.
+
+
 ## [1.16.2] - 2020-11-13
 
 - CASMHMS-4212 - Added final CA bundle configmap handling to Helm chart.
