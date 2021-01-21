@@ -30,13 +30,13 @@ import (
 
 	"gopkg.in/resty.v1"
 
+	"stash.us.cray.com/HMS/hms-certs/pkg/hms_certs"
 	"stash.us.cray.com/HMS/hms-reds/internal/columbia"
 	"stash.us.cray.com/HMS/hms-reds/internal/mapping"
 	"stash.us.cray.com/HMS/hms-reds/internal/smdclient"
 	snmp "stash.us.cray.com/HMS/hms-reds/internal/snmp/common"
 	"stash.us.cray.com/HMS/hms-reds/internal/storage"
 	storage_factory "stash.us.cray.com/HMS/hms-reds/internal/storage/factory"
-	"stash.us.cray.com/HMS/hms-certs/pkg/hms_certs"
 )
 
 type HTTPReportType int
@@ -280,9 +280,10 @@ func handleSNMPRemoveAction(in SNMPReport) {
 	}
 
 	if in.macAddr == xname_mac {
-		log.Printf("INFO: Marking xname %s as gone from the network.", *xname)
-		go smdclient.NotifyHSMRemoved(*xname)
-		log.Printf("DEBUG: Marking thread launched")
+		log.Printf("INFO: xname %s has disappeared from the network, but REDS no longer marks redfishEndpoints as disabled. This message is purely for your information; REDS is operating as expected.", *xname)
+		//log.Printf("INFO: Marking xname %s as gone from the network.", *xname)
+		//go smdclient.NotifyHSMRemoved(*xname)
+		//log.Printf("DEBUG: Marking thread launched")
 	} else {
 		log.Printf("INFO: Not marking xname %s as gone from the network.  Disappeared MAC address (%s) does not match stored MAC address for %s (%s).",
 			*xname, in.macAddr, *xname, xname_mac)
