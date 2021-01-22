@@ -301,9 +301,6 @@ func handleSNMPRemoveAction(in SNMPReport) {
 
 	if in.macAddr == xname_mac {
 		log.Printf("INFO: xname %s has disappeared from the network, but REDS no longer marks redfishEndpoints as disabled. This message is purely for your information; REDS is operating as expected.", *xname)
-		//log.Printf("INFO: Marking xname %s as gone from the network.", *xname)
-		//go smdclient.NotifyHSMRemoved(*xname)
-		//log.Printf("DEBUG: Marking thread launched")
 	} else {
 		log.Printf("INFO: Not marking xname %s as gone from the network.  Disappeared MAC address (%s) does not match stored MAC address for %s (%s).",
 			*xname, in.macAddr, *xname, xname_mac)
