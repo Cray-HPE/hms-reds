@@ -42,7 +42,7 @@ cray-service:
         - name: SLS_ADDR
           value: "cray-sls/v1"
         - name: REDS_SYSLOG_TARG
-          value: "rsyslog_agg_service_hmn.local:514"
+          value: "rsyslog-aggregator.hmnlb:514"
         - name: REDS_NTP_TARG
           valueFrom:
             configMapKeyRef:
