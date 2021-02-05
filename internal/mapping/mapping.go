@@ -76,6 +76,10 @@ var cbLock sync.Mutex
 // Access to permanent storage
 var modStorage storage.Storage = nil
 
+// Service/instance name
+var serviceName string
+
+
 /* INTERNAL data structures for storing the mapping */
 // Switch port has no private stuff
 
@@ -136,8 +140,9 @@ ConfigreSLSMode enables querying the mapping from SLS, rather than using
 a local mapping.  Calling this function changes the mode of the mapping
 module and cannot be undone, except by restarting REDS.
 */
-func ConfigureSLSMode(mSlsUrl string, client *http.Client, secStorage *sstorage.SecureStorage, ccreds *compcredentials.CompCredStore) {
+func ConfigureSLSMode(mSlsUrl string, client *http.Client, secStorage *sstorage.SecureStorage, ccreds *compcredentials.CompCredStore, svcName string) {
 	slsURL = mSlsUrl
+	serviceName = svcName
 
 	if client == nil {
 		// Setup http client we'll reuse for every connection to this device
@@ -381,7 +386,14 @@ func switchFromSLSReturn(gh GenericHardware) (*Switch, error) {
 func GetSwitches() (*(map[string](Switch)), error) {
 
 	log.Printf("TRACE: GET from http://" + slsURL + "/" + SLS_SEARCH_HARDWARE_ENDPOINT + "?type=comptype_mgmt_switch&class=River")
-	resp, err := slsClient.Get("http://" + slsURL + "/" + SLS_SEARCH_HARDWARE_ENDPOINT + "?type=comptype_mgmt_switch&class=River")
+	url := "http://" + slsURL + "/" + SLS_SEARCH_HARDWARE_ENDPOINT + "?type=comptype_mgmt_switch&class=River"
+	req,qerr := http.NewRequest("GET",url,nil)
+	if (qerr != nil) {
+		log.Printf("WARNING: Can't create new HTTP request: %v",qerr)
+		return nil,qerr
+	}
+	base.SetHTTPUserAgent(req,serviceName)
+	resp, err := slsClient.Do(req)
 
 	if err != nil {
 		log.Printf("WARNING: Cannot retrieve switch list: %s", err)
@@ -425,7 +437,15 @@ func GetSwitches() (*(map[string](Switch)), error) {
 
 func GetSwitchByName(switchName string) (*Switch, error) {
 	log.Printf("TRACE: GET from http://" + slsURL + "/hardware/" + switchName)
-	resp, err := slsClient.Get("http://" + slsURL + "/hardware/" + switchName)
+	url := "http://" + slsURL + "/hardware/" + switchName
+	req,qerr := http.NewRequest("GET",url,nil)
+	if (qerr != nil) {
+		log.Printf("WARNING: Can't create new HTTP request: %v",qerr)
+		return nil,qerr
+	}
+	base.SetHTTPUserAgent(req,serviceName)
+
+	resp, err := slsClient.Do(req)
 
 	if err != nil {
 		log.Printf("WARNING: Cannot retrieve switch %s: %s", switchName, err)
@@ -455,7 +475,14 @@ func GetSwitchByName(switchName string) (*Switch, error) {
 
 func GetSwitchPorts(switchName string) (*([](SwitchPort)), error) {
 	log.Printf("TRACE: GET from http://" + slsURL + "/" + SLS_SEARCH_HARDWARE_ENDPOINT + "?parent=" + switchName + "&type=comptype_mgmt_switch_connector")
-	resp, err := slsClient.Get("http://" + slsURL + "/" + SLS_SEARCH_HARDWARE_ENDPOINT + "?parent=" + switchName + "&type=comptype_mgmt_switch_connector")
+	url := "http://" + slsURL + "/" + SLS_SEARCH_HARDWARE_ENDPOINT + "?parent=" + switchName + "&type=comptype_mgmt_switch_connector"
+	req,qerr := http.NewRequest("GET",url,nil)
+	if (qerr != nil) {
+		log.Printf("WARNING: Can't create new HTTP request: %v",qerr)
+		return nil,qerr
+	}
+	base.SetHTTPUserAgent(req,serviceName)
+	resp, err := slsClient.Do(req)
 
 	if err != nil {
 		log.Printf("WARNING: Cannot retrieve switch port for %s: %s", switchName, err)
@@ -549,7 +576,14 @@ func GetManagementNodes() ([]GenericHardware, error) {
 	url := fmt.Sprintf("http://%s/%s?type=comptype_node&class=River&extra_properties.Role=Management",
 		slsURL, SLS_SEARCH_HARDWARE_ENDPOINT)
 	log.Printf("TRACE: GET from %s", url)
-	resp, err := slsClient.Get(url)
+	req,qerr := http.NewRequest("GET",url,nil)
+	if (qerr != nil) {
+		log.Printf("WARNING: Can't create new HTTP request: %v",qerr)
+		return nil,qerr
+	}
+	base.SetHTTPUserAgent(req,serviceName)
+
+	resp, err := slsClient.Do(req)
 
 	if err != nil {
 		log.Printf("WARNING: Cannot retrieve management node list: %s", err)

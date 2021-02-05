@@ -430,7 +430,7 @@ func caCB(caBundle string) {
 }
 
 // StartColumbia - gathers list of Columbia switches and starts watching them for hardware
-func StartColumbia(slsUrl string, hsmUrl string, syslogTarg string, ntpTarg string, sshKey string, redfishNPSuffix string) {
+func StartColumbia(slsUrl string, hsmUrl string, syslogTarg string, ntpTarg string, sshKey string, redfishNPSuffix string, svcName string) {
 	// NOTE: this sits and waits for sls to return a valid list of Columbia switches so
 	//  make sure to run this in a separate thread or be prepared to wait forever.
 	var err error
@@ -454,6 +454,7 @@ func StartColumbia(slsUrl string, hsmUrl string, syslogTarg string, ntpTarg stri
 	//Set up TLS-cert-enabled RF transport, insecure for SLS,HSM.
 
 	log.Printf("INFO: Creating insecure HTTP client for non-Redfish operation.")
+	hms_certs.InitInstance(nil,svcName)
 	client,_ = hms_certs.CreateHTTPClientPair("",10)
 
 	//Open TLS secured HTTP transport.  Fail over if we can't get it to work

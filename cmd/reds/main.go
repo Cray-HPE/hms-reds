@@ -50,6 +50,7 @@ import (
 
 	"gopkg.in/resty.v1"
 
+	"stash.us.cray.com/HMS/hms-base"
 	"stash.us.cray.com/HMS/hms-certs/pkg/hms_certs"
 	"stash.us.cray.com/HMS/hms-reds/internal/columbia"
 	"stash.us.cray.com/HMS/hms-reds/internal/mapping"
@@ -74,6 +75,10 @@ var HTTPReportTypeString = map[HTTPReportType]string{
 	HTTPREPORT_NEW_MAPPING:     "New Port<->Xname Map",
 	HTTPREPORT_MAX:             "Invalid",
 }
+
+// Service/instance name
+
+var serviceName string
 
 // HTTP listen spec (ip:port)
 var httpListen string
@@ -245,6 +250,7 @@ func getXNameMacFromHSM(xname *string) (string, error) {
 	resp, err := rClient.
 		R().
 		SetResult(&data).
+		SetHeader(base.USERAGENT,serviceName).
 		Get(hsm + "/Inventory/RedfishEndpoints/" + *xname)
 	if err != nil {
 		log.Printf("WARNING: Unable to send information for %s: %v", *xname, err)
@@ -412,6 +418,7 @@ func main() {
 	var defSSHKey string
 	var syslogTarg, ntpTarg string
 	var redfishNPSuffix string
+	var err error
 
 	// First thing's first: Parse input options.
 	flag.StringVar(&httpListen, "http-listen", ":8269", "HTTP server IP/port bind target")
@@ -427,7 +434,13 @@ func main() {
 	flag.Parse()
 
 	getEnvVars()
+	serviceName,err = base.GetServiceInstanceName()
+	if (err != nil) {
+		log.Printf("WARNING: can't get service/instance name, using 'REDS'.")
+		serviceName = "REDS"
+	}
 
+	log.Printf("Configuration: instance name: %s", serviceName)
 	log.Printf("Configuration: http-listen: %s", httpListen)
 	log.Printf("Configuration: hsm: %s", hsm)
 	log.Printf("Configuration: smnet: %s", smnetURL)
@@ -440,7 +453,6 @@ func main() {
 	log.Print("Started reds")
 
 	log.Printf("DEBUG: Connecting to storage")
-	var err error
 	mainstorage, err = storage_factory.MakeStorage("etcd", datastore_base, insecure)
 	if err != nil {
 		panic(err)
@@ -449,10 +461,10 @@ func main() {
 
 	//Init the secure TLS stuff
 
-	hms_certs.Init(nil)
+	hms_certs.InitInstance(nil,serviceName)
 
 	// Initialize our HSM interface
-	err = smdclient.Init(restRetry, restTimeout, hsm, bss)
+	err = smdclient.Init(restRetry, restTimeout, hsm, bss, serviceName)
 	if err != nil {
 		panic(err)
 	}
@@ -462,7 +474,7 @@ func main() {
 	snmpichan = make(chan SNMPReport)
 	httpichan = make(chan HTTPReport)
 
-	mapping.ConfigureSLSMode(sls, nil, nil, nil)
+	mapping.ConfigureSLSMode(sls, nil, nil, nil, serviceName)
 
 	switchQuitChan := make(chan bool)
 	go mapping.WatchSLSNewSwitches(switchQuitChan)
@@ -485,7 +497,7 @@ func main() {
 	go run_SNMP(snmpichan, &mainstorage)
 	go run_HTTPsrv(httpichan, mainstorage)
 
-	go columbia.StartColumbia(sls, hsm, syslogTarg, ntpTarg, defSSHKey, redfishNPSuffix)
+	go columbia.StartColumbia(sls, hsm, syslogTarg, ntpTarg, defSSHKey, redfishNPSuffix, serviceName)
 
 	// Load up the stored mapping file (if any) and send to SNMP
 	mapping.SetStorage(mainstorage, nil)
