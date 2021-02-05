@@ -32,6 +32,7 @@ import (
 	"time"
 
 	"gopkg.in/resty.v1"
+	"stash.us.cray.com/HMS/hms-base"
 	compcreds "stash.us.cray.com/HMS/hms-compcredentials"
 	"stash.us.cray.com/HMS/hms-reds/internal/storage"
 	sstorage "stash.us.cray.com/HMS/hms-securestorage"
@@ -67,6 +68,9 @@ var hcs *compcreds.CompCredStore
 // The URL to use to talk to BSS
 var bss string
 
+// The instance name of this running service instance
+var serviceName string
+
 // Custom String function to prevent passwords from being printed directly (accidentally) to output.
 func (n HSMNotification) String() string {
 	// Make pretty strings for these ones to print out
@@ -88,7 +92,8 @@ func (n HSMNotification) String() string {
 }
 
 // Init initializes constants and state for this module.
-func Init(restRetry int, restTimeout int, hsmURL string, bssURL string) error {
+func Init(restRetry int, restTimeout int, hsmURL string, bssURL string, svcName string) error {
+	serviceName = svcName
 	// Setup connection to HSM Vault
 	log.Printf("Connecting to HSM secure store (Vault)...")
 	// Start a connection to Vault
@@ -168,6 +173,7 @@ func NotifyHSMDiscoveredWithGeolocation(payload HSMNotification) bool {
 	resp, err := rClient.
 		R().
 		SetBody(payload).
+		SetHeader(base.USERAGENT,serviceName).
 		Post(hsm + "/Inventory/RedfishEndpoints")
 	if err != nil {
 		log.Printf("WARNING: Unable to send information for %s: %v", payload.ID, err)
@@ -206,6 +212,7 @@ func notifyBSSResync() {
 
 	resp, err := rClient.
 		R().
+		SetHeader(base.USERAGENT,serviceName).
 		Post(bss + "/hosts")
 	if err != nil {
 		log.Printf("WARNING: Unable to request BSS resync: %v", err)
@@ -232,6 +239,7 @@ func SetHSMXnameEnabled(xname string, enabled bool) (bool, error) {
 
 	req := rClient.R()
 	req.SetHeader("Content-Type", "application/json")
+	req.SetHeader(base.USERAGENT,serviceName)
 	req.SetBody(payload)
 	resp, err := req.Patch(hsm + "/Inventory/RedfishEndpoints/" + xname)
 	if err != nil {
@@ -256,7 +264,9 @@ Returns if the named node is listed as present in HSM or not
 func QueryHSMState(xname string) (bool, error) {
 	log.Printf("DEBUG: GET from %s/Inventory/RedfishEndpoints/%s", hsm, xname)
 
-	resp, err := rClient.R().Get(hsm + "/Inventory/RedfishEndpoints/" + xname)
+	resp, err := rClient.R().
+	             SetHeader(base.USERAGENT,serviceName).
+	             Get(hsm + "/Inventory/RedfishEndpoints/" + xname)
 	if err != nil {
 		log.Printf("WARNING: Unable to get information for %s: %v", xname, err)
 		return false, err

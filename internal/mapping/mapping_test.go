@@ -32,6 +32,7 @@ import (
 	"testing"
 	"time"
 
+	"stash.us.cray.com/HMS/hms-base"
 	compcredentials "stash.us.cray.com/HMS/hms-compcredentials"
 	sstorage "stash.us.cray.com/HMS/hms-securestorage"
 )
@@ -39,6 +40,8 @@ import (
 const SLS_BASE_HOSTNAME = "cray-sls"
 const SLS_BASE_VERSION = "v1"
 const SLS_BASE_URL = SLS_BASE_HOSTNAME + "/" + SLS_BASE_VERSION
+
+const INSTNAME = "MappingTest"
 
 var client *http.Client
 
@@ -231,6 +234,28 @@ var payloadSLSSwitchPortByIFName = `[
 ]`
 
 func BaseRTFunc(r *http.Request) *http.Response {
+	//Check for User-Agent header.
+	bad := true
+	if (len(r.Header) > 0) {
+		vals,ok := r.Header[base.USERAGENT]
+		if (ok) {
+			for _,v := range(vals) {
+				if (v == INSTNAME) {
+					bad = false
+					break
+				}
+			}
+		}
+	}
+	if (bad) {
+		return &http.Response{
+			StatusCode: http.StatusInternalServerError,
+			// Send mock response for rpath
+			Body:   ioutil.NopCloser(bytes.NewBufferString("Missing or incorrect User-Agent header")),
+			Header: make(http.Header),
+		}
+	}
+
 	switch r.URL.Path {
 	case "/" + SLS_BASE_VERSION + "/" + SLS_SEARCH_HARDWARE_ENDPOINT:
 		switch r.URL.Query().Encode() {
@@ -290,7 +315,7 @@ func Test_SLS_GetSwitches(t *testing.T) {
 	})
 	log.Printf("%v", compcreds)
 
-	ConfigureSLSMode(SLS_BASE_URL, NewTestClient(BaseRTFunc), &mss, compcreds)
+	ConfigureSLSMode(SLS_BASE_URL, NewTestClient(BaseRTFunc), &mss, compcreds, INSTNAME)
 
 	switchQuitChan := make(chan bool)
 	go WatchSLSNewSwitches(switchQuitChan)
@@ -381,7 +406,7 @@ func Test_SLS_GetSwitchByName(t *testing.T) {
 		SNMPAuthPass: "dummy3",
 		SNMPPrivPass: "dummy4",
 	})
-	ConfigureSLSMode(SLS_BASE_URL, NewTestClient(BaseRTFunc), &mss, compcreds)
+	ConfigureSLSMode(SLS_BASE_URL, NewTestClient(BaseRTFunc), &mss, compcreds, INSTNAME)
 
 	switchQuitChan := make(chan bool)
 	go WatchSLSNewSwitches(switchQuitChan)
@@ -426,7 +451,7 @@ func Test_SLS_GetSwitchByName(t *testing.T) {
 }
 
 func Test_SLS_GetSwitchPorts(t *testing.T) {
-	ConfigureSLSMode(SLS_BASE_URL, NewTestClient(BaseRTFunc), &mss, compcreds)
+	ConfigureSLSMode(SLS_BASE_URL, NewTestClient(BaseRTFunc), &mss, compcreds, INSTNAME)
 
 	switchQuitChan := make(chan bool)
 	go WatchSLSNewSwitches(switchQuitChan)
@@ -478,7 +503,7 @@ func Test_SLS_GetSwitchPorts(t *testing.T) {
 }
 
 func Test_SLS_GetSwitchPortByIFName(t *testing.T) {
-	ConfigureSLSMode(SLS_BASE_URL, NewTestClient(BaseRTFunc), &mss, compcreds)
+	ConfigureSLSMode(SLS_BASE_URL, NewTestClient(BaseRTFunc), &mss, compcreds, INSTNAME)
 
 	switchQuitChan := make(chan bool)
 	go WatchSLSNewSwitches(switchQuitChan)
@@ -644,7 +669,7 @@ func Test_SLS_watchSLSNewSwitches(t *testing.T) {
 		SNMPPrivPass: "zyx987",
 	})
 
-	ConfigureSLSMode(SLS_BASE_URL, NewTestClient(TimedSwitchesRTFunc), &mss, compcreds)
+	ConfigureSLSMode(SLS_BASE_URL, NewTestClient(TimedSwitchesRTFunc), &mss, compcreds, INSTNAME)
 
 	switchQuitChan := make(chan bool)
 	go WatchSLSNewSwitches(switchQuitChan)
@@ -690,7 +715,7 @@ func Test_SLS_watchSLSNewSwitchesNoChange(t *testing.T) {
 
 	print("%v", mss)
 
-	ConfigureSLSMode(SLS_BASE_URL, NewTestClient(BaseRTFunc), &mss, compcreds)
+	ConfigureSLSMode(SLS_BASE_URL, NewTestClient(BaseRTFunc), &mss, compcreds, INSTNAME)
 
 	switchQuitChan := make(chan bool)
 	go WatchSLSNewSwitches(switchQuitChan)
