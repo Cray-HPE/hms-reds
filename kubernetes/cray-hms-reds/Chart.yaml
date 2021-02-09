@@ -2,4 +2,4 @@ apiVersion: v1
 description: "Kubernetes resources for cray-hms-reds"
 name: "cray-hms-reds"
 home: "HMS/hms-reds"
-version: 1.16.5
+version: 1.16.6
