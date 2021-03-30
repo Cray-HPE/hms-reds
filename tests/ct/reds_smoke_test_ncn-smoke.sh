@@ -36,7 +36,7 @@
 #
 #     DATE STARTED      : 04/29/2019
 #
-#     LAST MODIFIED     : 09/23/2020
+#     LAST MODIFIED     : 03/30/2021
 #
 #     SYNOPSIS
 #       This is a smoke test for the HMS REDS API that makes basic HTTP
@@ -79,6 +79,7 @@
 #       schooler   04/15/2020   update smoke test for REDS in SLS mode
 #       schooler   06/25/2020   add liveness and readiness API tests
 #       schooler   09/23/2020   use latest hms_smoke_test_lib
+#       schooler   03/30/2021   add check_job_status test
 #
 #     DEPENDENCIES
 #       - hms_smoke_test_lib_ncn-resources_remote-resources.sh which is
@@ -90,10 +91,11 @@
 #
 ###############################################################
 
-# HMS test metrics test cases: 3
+# HMS test metrics test cases: 4
 # 1. Check cray-reds pod statuses
-# 2. GET /liveness API response code
-# 3. GET /readiness API response code
+# 2. Check cray-reds job statuses
+# 3. GET /liveness API response code
+# 4. GET /readiness API response code
 
 # initialize test variables
 TEST_RUN_TIMESTAMP=$(date +"%Y%m%dT%H%M%S")
@@ -152,6 +154,13 @@ function check_pod_status()
     return $?
 }
 
+# check_job_status
+function check_job_status()
+{
+    run_check_job_status "cray-reds"
+    return $?
+}
+
 trap ">&2 echo \"recieved kill signal, exiting with status of '1'...\" ; \
     cleanup ; \
     exit 1" SIGHUP SIGINT SIGTERM
@@ -176,6 +185,14 @@ echo "Running reds_smoke_test..."
 
 # run initial pod status test
 check_pod_status
+if [[ $? -ne 0 ]] ; then
+    echo "FAIL: reds_smoke_test ran with failures"
+    cleanup
+    exit 1
+fi
+
+# run initial job status test
+check_job_status
 if [[ $? -ne 0 ]] ; then
     echo "FAIL: reds_smoke_test ran with failures"
     cleanup
