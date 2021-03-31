@@ -9,7 +9,7 @@
 
 imagesHost: "dtr.dev.cray.com"
 # Version of the kubectl pod to use when upgrading/downgrading charts
-dockerKubectlTag: &dockerKubectlTag 0.2.0-20200421212755_170bb37
+dockerKubectlTag: &dockerKubectlTag 0.2.0
 hms_ca_uri: ""
 
 cray-service:
