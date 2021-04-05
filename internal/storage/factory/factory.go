@@ -40,7 +40,7 @@ func MakeStorage(dstype string, url string, insecure bool) (storage.Storage, err
 	}
 
 	ret = new(etcd.Etcd)
-	ret.Init(url, false)
+	err := ret.Init(url, false)
 
-	return ret, nil
+	return ret, err
 }

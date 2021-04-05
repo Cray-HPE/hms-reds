@@ -304,3 +304,21 @@ func TestEtcdLiveness_noDelete(t *testing.T) {
 		t.Errorf("Etcd is not dead?!")
 	}
 }
+
+/*
+Test what happens if a real ETCD URL won't work, should fail cleanly.
+*/
+func TestMakeStorage(t *testing.T) {
+	etcdi := new(Etcd)
+	err := etcdi.Init("mem:", false)
+	if (err != nil) {
+		t.Errorf("ETCD Init() with 'mem:' failed: %v",err)
+	}
+
+	etcdi2 := new(Etcd)
+	err2 := etcdi2.Init("localhost:9897",false)
+	if (err2 == nil) {
+		t.Errorf("ETCD Init() with bogus URL did not fail!")
+	}
+}
+
