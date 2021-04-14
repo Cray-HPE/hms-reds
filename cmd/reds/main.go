@@ -455,6 +455,7 @@ func main() {
 	log.Printf("DEBUG: Connecting to storage")
 	mainstorage, err = storage_factory.MakeStorage("etcd", datastore_base, insecure)
 	if err != nil {
+		log.Printf("FATAL: Can't connect to ETCD backing storage!")
 		panic(err)
 	}
 	log.Printf("DEBUG: Connected to storage")
