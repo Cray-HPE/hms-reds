@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Added istio pod anti-affinity.
+- Added istio pod anti-affinity to helm chart.
 
 ## [1.18.4] - 2021-04-15
 
