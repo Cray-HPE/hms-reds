@@ -1,4 +1,4 @@
-@Library('dst-shared@master') _
+@Library('dst-shared@DST-8116') _
 
 dockerBuildPipeline {
         githubPushRepo = "Cray-HPE/hms-reds"
