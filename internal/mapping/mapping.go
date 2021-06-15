@@ -31,6 +31,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -673,6 +674,26 @@ func WatchSLSNewManagementNodes(quitChan chan bool) {
 						continue
 					} else {
 						log.Printf("DEBUG: Set credentials for %s", node.Parent)
+					}
+				}
+
+				// Add ncn-m001 to HSM here to account for cases where ncn-m001 is not being added to the cluster.
+				for _, alias := range node.ExtraPropertiesRaw.(map[string]interface{})["Aliases"].([]interface{}) {
+					if strings.ToLower(alias.(string)) == "ncn-m001" {
+						nid := json.Number(strconv.FormatFloat(node.ExtraPropertiesRaw.(map[string]interface{})["NID"].(float64), 'f', 0, 64))
+						hsmCompNotification := smdclient.HSMCompNotification{
+							Components: []base.Component{{
+								ID:      node.Xname,
+								State:   base.StatePopulated.String(),
+								Role:    node.ExtraPropertiesRaw.(map[string]interface{})["Role"].(string),
+								SubRole: node.ExtraPropertiesRaw.(map[string]interface{})["SubRole"].(string),
+								NID:     nid,
+								NetType: base.NetSling.String(),
+								Arch:    base.ArchX86.String(),
+								Class:   node.Class,
+							}},
+						}
+						smdclient.HSMCreateComponent(hsmCompNotification)
 					}
 				}
 
