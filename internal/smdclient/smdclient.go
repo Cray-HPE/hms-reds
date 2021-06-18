@@ -52,6 +52,13 @@ type HSMNotification struct {
 	Enabled            *bool  `json:"Enabled,omitempty"` //need to set a default
 }
 
+// HSMStateNotification is used to create component entries directly in HSM
+//   under /State/Components to bypass the HSM discovery process.
+type HSMCompNotification struct {
+	Components []base.Component `json:"Components"`
+	Force      bool             `json:"Force,omitempty"`
+}
+
 // Have we initialized this module?
 var doneInit = false
 
@@ -300,4 +307,43 @@ func QueryHSMState(xname string) (bool, error) {
 	log.Printf("WARNING: Error occurred looking up %s in HSM (code %d):\n%s", xname, resp.StatusCode(), string(strbody))
 	rerr := errors.New("Unable to retrieve status from HSM: " + string(resp.StatusCode()) + "\n" + strbody)
 	return false, rerr
+}
+
+// HSMCreateComponent performs the task of adding a discovered component
+//   directly into HSM under /State/Components to bypass the HSM discovery
+//   process. This is typically to add a Master node that is not being added
+//   to the management network. This will never fail on conflict. Instead HSM
+//   will skip changes to already existing components unless we set Force=true
+//   which we're not.
+func HSMCreateComponent(payload HSMCompNotification) bool {
+	log.Printf("INFO: Creating a component in HSM, %s.", payload.Components[0].ID)
+	_, err := json.Marshal(payload)
+	if err != nil {
+		log.Printf("WARNING: Could not encode JSON for %s: %v (%v)", payload.Components[0].ID,
+			err, payload)
+	}
+
+	log.Printf("DEBUG: POST to %s with %v", hsm+"/State/Components",
+		payload)
+
+	resp, err := rClient.
+		R().
+		SetBody(payload).
+		SetHeader(base.USERAGENT,serviceName).
+		Post(hsm + "/State/Components")
+	if err != nil {
+		log.Printf("WARNING: Unable to send information for %s: %v", payload.Components[0].ID, err)
+		log.Printf("WARNING: Errors occured and %s was not added to HSM.", payload.Components[0].ID)
+		return false
+	}
+
+	if resp.StatusCode() == http.StatusNoContent {
+		log.Printf("INFO: Successfully added %s to HSM", payload.Components[0].ID)
+		return true
+	} else {
+		log.Printf("WARNING: An error occurred uploading %s: %s %v", payload.Components[0].ID,
+			resp.Status(), resp)
+		log.Printf("WARNING: Errors occured and %s was not added to HSM.", payload.Components[0].ID)
+		return false
+	}
 }
