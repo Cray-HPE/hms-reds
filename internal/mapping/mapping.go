@@ -31,6 +31,7 @@ import (
 	"log"
 	"net/http"
 	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -611,6 +612,45 @@ func GetManagementNodes() ([]GenericHardware, error) {
 	return retGH, nil
 }
 
+func GetConnectorsByBMC(xname string) ([]GenericHardware, error) {
+	url := fmt.Sprintf("http://%s/%s?node_nics=%s",
+		slsURL, SLS_SEARCH_HARDWARE_ENDPOINT, xname)
+	log.Printf("TRACE: GET from %s", url)
+	req,qerr := http.NewRequest("GET", url, nil)
+	if (qerr != nil) {
+		log.Printf("WARNING: Can't create new HTTP request: %v", qerr)
+		return nil, qerr
+	}
+	base.SetHTTPUserAgent(req, serviceName)
+
+	resp, err := slsClient.Do(req)
+
+	if err != nil {
+		log.Printf("WARNING: Cannot retrieve management node list: %s", err)
+		return nil, err
+	}
+
+	strbody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("WARNING: Couldn't read response body: %s", err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		log.Printf("WARNING: Invalid response from SLS. Code: %d, message: %s", resp.StatusCode, strbody)
+		return nil, errors.New("SLS returned " + resp.Status)
+	}
+
+	var retGH []GenericHardware
+	err = json.Unmarshal(strbody, &retGH)
+	if err != nil {
+		log.Printf("WARNING: Unable to unmarshall response from SLS: %s", err)
+		return nil, err
+	}
+
+	return retGH, nil
+}
+
 /*
 Look for new management nodes appearing in SLS by periodically querying node list and comparing.
 */
@@ -643,6 +683,13 @@ func WatchSLSNewManagementNodes(quitChan chan bool) {
 
 				log.Printf("INFO: Found new management node %+v", node)
 
+				conns, err := GetConnectorsByBMC(node.Parent)
+				if err != nil {
+					log.Printf("ERROR: Unable to get node connector info from SLS, not adding "+
+						"nodes in %s for now.", node.Parent)
+					continue
+				}
+
 				// First check to see if there are credentials in Vault for this xname. If there are we won't
 				// re-set them in case they've been changed from the defaults.
 				credentials, err := compcreds.GetCompCred(node.Parent)
@@ -673,6 +720,41 @@ func WatchSLSNewManagementNodes(quitChan chan bool) {
 						continue
 					} else {
 						log.Printf("DEBUG: Set credentials for %s", node.Parent)
+					}
+				}
+
+				// Add Master Management nodes to HSM under /State/Components
+				// to account for cases where their BMC is not connected to
+				// the cluster. These nodes will not have MgmtSwitchConnectors
+				if len(conns) == 0 {
+					var (
+						role    string
+						subrole string
+						nid     json.Number
+					)
+					if val, ok := node.ExtraPropertiesRaw.(map[string]interface{})["Role"]; ok {
+						role = base.VerifyNormalizeRole(val.(string))
+					}
+					if val, ok := node.ExtraPropertiesRaw.(map[string]interface{})["SubRole"]; ok {
+						subrole = base.VerifyNormalizeSubRole(val.(string))
+					}
+					if role == base.RoleManagement.String() && subrole == base.SubRoleMaster.String() {
+						if val, ok := node.ExtraPropertiesRaw.(map[string]interface{})["NID"]; ok {
+							nid = json.Number(strconv.FormatFloat(val.(float64), 'f', 0, 64))
+						}
+						hsmCompNotification := smdclient.HSMCompNotification{
+							Components: []base.Component{{
+								ID:      node.Xname,
+								State:   base.StatePopulated.String(),
+								Role:    role,
+								SubRole: subrole,
+								NID:     nid,
+								NetType: base.NetSling.String(),
+								Arch:    base.ArchX86.String(),
+								Class:   node.Class,
+							}},
+						}
+						smdclient.HSMCreateComponent(hsmCompNotification)
 					}
 				}
 
