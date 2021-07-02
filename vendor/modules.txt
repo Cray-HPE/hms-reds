@@ -8,6 +8,7 @@ github.com/coreos/etcd/pkg/types
 # github.com/fsnotify/fsnotify v1.4.9
 github.com/fsnotify/fsnotify
 # github.com/geoffgarside/ber v1.1.0
+## explicit
 github.com/geoffgarside/ber
 # github.com/gogo/protobuf v1.2.1
 github.com/gogo/protobuf/gogoproto
@@ -22,6 +23,7 @@ github.com/golang/protobuf/ptypes/timestamp
 # github.com/golang/snappy v0.0.1
 github.com/golang/snappy
 # github.com/gorilla/mux v1.8.0
+## explicit
 github.com/gorilla/mux
 # github.com/hashicorp/errwrap v1.0.0
 github.com/hashicorp/errwrap
@@ -55,16 +57,20 @@ github.com/hashicorp/vault/sdk/helper/jsonutil
 github.com/hashicorp/vault/sdk/helper/parseutil
 github.com/hashicorp/vault/sdk/helper/strutil
 # github.com/k-sone/snmpgo v3.2.0+incompatible
+## explicit
 github.com/k-sone/snmpgo
 # github.com/konsorten/go-windows-terminal-sequences v1.0.3
 github.com/konsorten/go-windows-terminal-sequences
 # github.com/mitchellh/go-homedir v1.1.0
 github.com/mitchellh/go-homedir
 # github.com/mitchellh/mapstructure v1.3.3
+## explicit
 github.com/mitchellh/mapstructure
 # github.com/pierrec/lz4 v2.0.5+incompatible
 github.com/pierrec/lz4
 github.com/pierrec/lz4/internal/xxh32
+# github.com/prometheus/client_golang v0.9.3-0.20190127221311-3c4408c8b829
+## explicit
 # github.com/ryanuber/go-glob v1.0.0
 github.com/ryanuber/go-glob
 # github.com/sirupsen/logrus v1.6.0
@@ -137,21 +143,28 @@ google.golang.org/grpc/stats
 google.golang.org/grpc/status
 google.golang.org/grpc/tap
 # gopkg.in/resty.v1 v1.12.0
+## explicit
 gopkg.in/resty.v1
 # gopkg.in/square/go-jose.v2 v2.3.1
 gopkg.in/square/go-jose.v2
 gopkg.in/square/go-jose.v2/cipher
 gopkg.in/square/go-jose.v2/json
 gopkg.in/square/go-jose.v2/jwt
-# stash.us.cray.com/HMS/hms-base v1.12.0
+# stash.us.cray.com/HMS/hms-base v1.13.0
+## explicit
 stash.us.cray.com/HMS/hms-base
-# stash.us.cray.com/HMS/hms-bmc-networkprotocol v1.4.0
+# stash.us.cray.com/HMS/hms-bmc-networkprotocol v1.5.0
+## explicit
 stash.us.cray.com/HMS/hms-bmc-networkprotocol/pkg
-# stash.us.cray.com/HMS/hms-certs v1.2.0
+# stash.us.cray.com/HMS/hms-certs v1.3.0
+## explicit
 stash.us.cray.com/HMS/hms-certs/pkg/hms_certs
-# stash.us.cray.com/HMS/hms-compcredentials v1.10.0
+# stash.us.cray.com/HMS/hms-compcredentials v1.11.0
+## explicit
 stash.us.cray.com/HMS/hms-compcredentials
-# stash.us.cray.com/HMS/hms-hmetcd v1.9.0
+# stash.us.cray.com/HMS/hms-hmetcd v1.10.0
+## explicit
 stash.us.cray.com/HMS/hms-hmetcd
-# stash.us.cray.com/HMS/hms-securestorage v1.11.0
+# stash.us.cray.com/HMS/hms-securestorage v1.12.0
+## explicit
 stash.us.cray.com/HMS/hms-securestorage
