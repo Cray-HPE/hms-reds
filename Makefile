@@ -1,7 +1,4 @@
-#!/usr/bin/env bash
-# MIT License
-#
-# (C) Copyright [2021] Hewlett Packard Enterprise Development LP
+# Copyright 2019-2021 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -15,17 +12,34 @@
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
 # THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
 # OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
+#
+# (MIT License)
 
-# Fail on error and print executions
-set -ex
+NAME ?= cray-reds
+VERSION ?= $(shell cat .version)
 
-# Build the build base image (if it's not already)
-docker build -t cray/reds-base:${VERSION} --target base .
+# Helm Chart
+CHART_PATH ?= kubernetes
+CHART_NAME ?= cray-hms-reds
+CHART_VERSION ?= local
 
-# Run the tests.
-docker build -t cray/reds-coverage:${VERSION} -f Dockerfile.coverage --no-cache .
+test:
+	./runUnitTest.sh
+
+snyk:
+	./runSnyk.sh
+
+coverage:
+	./runCoverage.sh
+
+image:
+	docker build --pull ${DOCKER_ARGS} --tag '${NAME}:${VERSION}' .
+
+chart:
+	helm dep up ${CHART_PATH}/${CHART_NAME}
+	helm package ${CHART_PATH}/${CHART_NAME} -d ${CHART_PATH}/.packaged --version ${CHART_VERSION}
