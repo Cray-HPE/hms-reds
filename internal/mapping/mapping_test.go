@@ -32,9 +32,9 @@ import (
 	"testing"
 	"time"
 
-	"stash.us.cray.com/HMS/hms-base"
-	compcredentials "stash.us.cray.com/HMS/hms-compcredentials"
-	sstorage "stash.us.cray.com/HMS/hms-securestorage"
+	compcredentials "github.com/Cray-HPE/hms-compcredentials"
+	sstorage "github.com/Cray-HPE/hms-securestorage"
+	base "stash.us.cray.com/HMS/hms-base"
 )
 
 const SLS_BASE_HOSTNAME = "cray-sls"
@@ -236,18 +236,18 @@ var payloadSLSSwitchPortByIFName = `[
 func BaseRTFunc(r *http.Request) *http.Response {
 	//Check for User-Agent header.
 	bad := true
-	if (len(r.Header) > 0) {
-		vals,ok := r.Header[base.USERAGENT]
-		if (ok) {
-			for _,v := range(vals) {
-				if (v == INSTNAME) {
+	if len(r.Header) > 0 {
+		vals, ok := r.Header[base.USERAGENT]
+		if ok {
+			for _, v := range vals {
+				if v == INSTNAME {
 					bad = false
 					break
 				}
 			}
 		}
 	}
-	if (bad) {
+	if bad {
 		return &http.Response{
 			StatusCode: http.StatusInternalServerError,
 			// Send mock response for rpath

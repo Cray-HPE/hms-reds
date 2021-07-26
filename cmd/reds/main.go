@@ -49,15 +49,15 @@ import (
 	"time"
 
 	"gopkg.in/resty.v1"
+	base "stash.us.cray.com/HMS/hms-base"
 
-	"stash.us.cray.com/HMS/hms-base"
-	"stash.us.cray.com/HMS/hms-certs/pkg/hms_certs"
-	"stash.us.cray.com/HMS/hms-reds/internal/columbia"
-	"stash.us.cray.com/HMS/hms-reds/internal/mapping"
-	"stash.us.cray.com/HMS/hms-reds/internal/smdclient"
-	snmp "stash.us.cray.com/HMS/hms-reds/internal/snmp/common"
-	"stash.us.cray.com/HMS/hms-reds/internal/storage"
-	storage_factory "stash.us.cray.com/HMS/hms-reds/internal/storage/factory"
+	"github.com/Cray-HPE/hms-certs/pkg/hms_certs"
+	"github.com/Cray-HPE/hms-reds/internal/columbia"
+	"github.com/Cray-HPE/hms-reds/internal/mapping"
+	"github.com/Cray-HPE/hms-reds/internal/smdclient"
+	snmp "github.com/Cray-HPE/hms-reds/internal/snmp/common"
+	"github.com/Cray-HPE/hms-reds/internal/storage"
+	storage_factory "github.com/Cray-HPE/hms-reds/internal/storage/factory"
 )
 
 type HTTPReportType int
@@ -250,7 +250,7 @@ func getXNameMacFromHSM(xname *string) (string, error) {
 	resp, err := rClient.
 		R().
 		SetResult(&data).
-		SetHeader(base.USERAGENT,serviceName).
+		SetHeader(base.USERAGENT, serviceName).
 		Get(hsm + "/Inventory/RedfishEndpoints/" + *xname)
 	if err != nil {
 		log.Printf("WARNING: Unable to send information for %s: %v", *xname, err)
@@ -434,8 +434,8 @@ func main() {
 	flag.Parse()
 
 	getEnvVars()
-	serviceName,err = base.GetServiceInstanceName()
-	if (err != nil) {
+	serviceName, err = base.GetServiceInstanceName()
+	if err != nil {
 		log.Printf("WARNING: can't get service/instance name, using 'REDS'.")
 		serviceName = "REDS"
 	}
@@ -462,7 +462,7 @@ func main() {
 
 	//Init the secure TLS stuff
 
-	hms_certs.InitInstance(nil,serviceName)
+	hms_certs.InitInstance(nil, serviceName)
 
 	// Initialize our HSM interface
 	err = smdclient.Init(restRetry, restTimeout, hsm, bss, serviceName)

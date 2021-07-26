@@ -26,8 +26,8 @@ import (
 	"reflect"
 	"testing"
 
-	"stash.us.cray.com/HMS/hms-reds/internal/storage"
-	"stash.us.cray.com/HMS/hms-reds/internal/storage/mock"
+	"github.com/Cray-HPE/hms-reds/internal/storage"
+	"github.com/Cray-HPE/hms-reds/internal/storage/mock"
 )
 
 func TestRedsCredStore_GetGlobalCredentials(t *testing.T) {

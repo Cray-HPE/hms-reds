@@ -29,8 +29,8 @@ import (
 	"path"
 	"strings"
 
-	hmetcd "stash.us.cray.com/HMS/hms-hmetcd"
-	"stash.us.cray.com/HMS/hms-reds/internal/storage"
+	hmetcd "github.com/Cray-HPE/hms-hmetcd"
+	"github.com/Cray-HPE/hms-reds/internal/storage"
 )
 
 // The prefix to be prepended to all our keys.  Should begin and end with /

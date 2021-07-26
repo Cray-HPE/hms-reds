@@ -1,4 +1,4 @@
-module stash.us.cray.com/HMS/hms-hmetcd
+module github.com/Cray-HPE/hms-hmetcd
 
 go 1.16
 

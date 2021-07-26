@@ -150,21 +150,21 @@ gopkg.in/square/go-jose.v2
 gopkg.in/square/go-jose.v2/cipher
 gopkg.in/square/go-jose.v2/json
 gopkg.in/square/go-jose.v2/jwt
-# stash.us.cray.com/HMS/hms-base v1.13.0
+# github.com/Cray-HPE/hms-base v1.13.0
 ## explicit
-stash.us.cray.com/HMS/hms-base
-# stash.us.cray.com/HMS/hms-bmc-networkprotocol v1.5.0
+github.com/Cray-HPE/hms-base
+# github.com/Cray-HPE/hms-bmc-networkprotocol v1.5.0
 ## explicit
-stash.us.cray.com/HMS/hms-bmc-networkprotocol/pkg
-# stash.us.cray.com/HMS/hms-certs v1.3.0
+github.com/Cray-HPE/hms-bmc-networkprotocol/pkg
+# github.com/Cray-HPE/hms-certs v1.3.0
 ## explicit
-stash.us.cray.com/HMS/hms-certs/pkg/hms_certs
-# stash.us.cray.com/HMS/hms-compcredentials v1.11.0
+github.com/Cray-HPE/hms-certs/pkg/hms_certs
+# github.com/Cray-HPE/hms-compcredentials v1.11.0
 ## explicit
-stash.us.cray.com/HMS/hms-compcredentials
-# stash.us.cray.com/HMS/hms-hmetcd v1.10.0
+github.com/Cray-HPE/hms-compcredentials
+# github.com/Cray-HPE/hms-hmetcd v1.10.0
 ## explicit
-stash.us.cray.com/HMS/hms-hmetcd
-# stash.us.cray.com/HMS/hms-securestorage v1.12.0
+github.com/Cray-HPE/hms-hmetcd
+# github.com/Cray-HPE/hms-securestorage v1.12.0
 ## explicit
-stash.us.cray.com/HMS/hms-securestorage
+github.com/Cray-HPE/hms-securestorage

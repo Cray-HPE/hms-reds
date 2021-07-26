@@ -1,17 +1,17 @@
 // MIT License
-// 
+//
 // (C) Copyright [2019-2021] Hewlett Packard Enterprise Development LP
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
 // to deal in the Software without restriction, including without limitation
 // the rights to use, copy, modify, merge, publish, distribute, sublicense,
 // and/or sell copies of the Software, and to permit persons to whom the
 // Software is furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included
 // in all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
@@ -33,7 +33,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"stash.us.cray.com/HMS/hms-certs/pkg/hms_certs"
+
+	"github.com/Cray-HPE/hms-certs/pkg/hms_certs"
 )
 
 // This package provides an interface for sending Network Protocol stuff
@@ -112,28 +113,28 @@ func CopyRFNetworkProtocol(src *RedfishNWProtocol) RedfishNWProtocol {
 	var ret RedfishNWProtocol
 
 	ret.valid = src.valid
-	if (src.NTP != nil) {
+	if src.NTP != nil {
 		ret.NTP = &NTPData{ProtocolEnabled: src.NTP.ProtocolEnabled,
-		                   Port: src.NTP.Port,}
-		if (len(src.NTP.NTPServers) != 0) {
-			ret.NTP.NTPServers = append(src.NTP.NTPServers[:0:0],src.NTP.NTPServers...)
+			Port: src.NTP.Port}
+		if len(src.NTP.NTPServers) != 0 {
+			ret.NTP.NTPServers = append(src.NTP.NTPServers[:0:0], src.NTP.NTPServers...)
 		}
 	}
-	if (src.Oem != nil) {
+	if src.Oem != nil {
 		ret.Oem = &OemData{}
-		if (src.Oem.Syslog != nil) {
+		if src.Oem.Syslog != nil {
 			ret.Oem.Syslog = &SyslogData{ProtocolEnabled: src.Oem.Syslog.ProtocolEnabled,
-			                             Transport: src.Oem.Syslog.Transport,
-			                             Port: src.Oem.Syslog.Port,}
-			if (len(src.Oem.Syslog.SyslogServers) != 0) {
-				ret.Oem.Syslog.SyslogServers = append(src.Oem.Syslog.SyslogServers[:0:0],src.Oem.Syslog.SyslogServers...)
+				Transport: src.Oem.Syslog.Transport,
+				Port:      src.Oem.Syslog.Port}
+			if len(src.Oem.Syslog.SyslogServers) != 0 {
+				ret.Oem.Syslog.SyslogServers = append(src.Oem.Syslog.SyslogServers[:0:0], src.Oem.Syslog.SyslogServers...)
 			}
 		}
-		if (src.Oem.SSHAdmin != nil) {
-			ret.Oem.SSHAdmin = &SSHAdminData{AuthorizedKeys:src.Oem.SSHAdmin.AuthorizedKeys,}
+		if src.Oem.SSHAdmin != nil {
+			ret.Oem.SSHAdmin = &SSHAdminData{AuthorizedKeys: src.Oem.SSHAdmin.AuthorizedKeys}
 		}
-		if (src.Oem.SSHConsole != nil) {
-			ret.Oem.SSHConsole = &SSHAdminData{AuthorizedKeys:src.Oem.SSHConsole.AuthorizedKeys,}
+		if src.Oem.SSHConsole != nil {
+			ret.Oem.SSHConsole = &SSHAdminData{AuthorizedKeys: src.Oem.SSHConsole.AuthorizedKeys}
 		}
 	}
 
@@ -153,18 +154,18 @@ func Init(nwpData NWPData, rfSuffix string) (RedfishNWProtocol, error) {
 	var errstrs string
 	var err error
 
-	if (serviceName == "") {
-		serviceName,err = os.Hostname()
-		if (err != nil) {
-			serviceName = "NWP"	//Lame!  But, at least gives some indication.
+	if serviceName == "" {
+		serviceName, err = os.Hostname()
+		if err != nil {
+			serviceName = "NWP" //Lame!  But, at least gives some indication.
 		}
 	}
-	hms_certs.InitInstance(nil,serviceName)
+	hms_certs.InitInstance(nil, serviceName)
 
-	if (http_client == nil) {
-		http_client,err = hms_certs.CreateHTTPClientPair(nwpData.CAChainURI,17)
-		if (err != nil) {
-			return nwProtoInfo,fmt.Errorf("ERROR creating TLS cert-enabled HTTP client: %v",
+	if http_client == nil {
+		http_client, err = hms_certs.CreateHTTPClientPair(nwpData.CAChainURI, 17)
+		if err != nil {
+			return nwProtoInfo, fmt.Errorf("ERROR creating TLS cert-enabled HTTP client: %v",
 				err)
 		}
 	}
@@ -304,8 +305,8 @@ func SetXNameNWPInfo(nwProtoInfo RedfishNWProtocol, targAddress, RFUsername, RFP
 		return rerr
 	}
 
-	if (rsp.Body != nil) {
-		_,_ = ioutil.ReadAll(rsp.Body)
+	if rsp.Body != nil {
+		_, _ = ioutil.ReadAll(rsp.Body)
 		defer rsp.Body.Close()
 	}
 
