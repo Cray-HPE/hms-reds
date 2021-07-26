@@ -25,8 +25,8 @@ package model
 import (
 	"errors"
 	"fmt"
-	"stash.us.cray.com/HMS/hms-reds/internal/storage"
-	sstorage "stash.us.cray.com/HMS/hms-securestorage"
+	"github.com/Cray-HPE/hms-reds/internal/storage"
+	sstorage "github.com/Cray-HPE/hms-securestorage"
 )
 
 const CredentialsKeyPrefix = "secret/reds-cred"
@@ -48,7 +48,7 @@ func (redsCred RedsCredentials) String() string {
 }
 
 type SwitchCredentials struct {
-	SNMPUsername string
+	SNMPUsername     string
 	SNMPAuthPassword string
 	SNMPPrivPassword string
 }

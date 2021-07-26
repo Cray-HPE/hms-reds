@@ -31,11 +31,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/Cray-HPE/hms-base"
+	compcreds "github.com/Cray-HPE/hms-compcredentials"
+	"github.com/Cray-HPE/hms-reds/internal/storage"
+	sstorage "github.com/Cray-HPE/hms-securestorage"
 	"gopkg.in/resty.v1"
-	"stash.us.cray.com/HMS/hms-base"
-	compcreds "stash.us.cray.com/HMS/hms-compcredentials"
-	"stash.us.cray.com/HMS/hms-reds/internal/storage"
-	sstorage "stash.us.cray.com/HMS/hms-securestorage"
 )
 
 // HSMNotification is used to send newly discovered devices to HSM
@@ -173,7 +173,7 @@ func NotifyHSMDiscoveredWithGeolocation(payload HSMNotification) bool {
 	resp, err := rClient.
 		R().
 		SetBody(payload).
-		SetHeader(base.USERAGENT,serviceName).
+		SetHeader(base.USERAGENT, serviceName).
 		Post(hsm + "/Inventory/RedfishEndpoints")
 	if err != nil {
 		log.Printf("WARNING: Unable to send information for %s: %v", payload.ID, err)
@@ -212,7 +212,7 @@ func notifyBSSResync() {
 
 	resp, err := rClient.
 		R().
-		SetHeader(base.USERAGENT,serviceName).
+		SetHeader(base.USERAGENT, serviceName).
 		Post(bss + "/hosts")
 	if err != nil {
 		log.Printf("WARNING: Unable to request BSS resync: %v", err)
@@ -239,7 +239,7 @@ func SetHSMXnameEnabled(xname string, enabled bool) (bool, error) {
 
 	req := rClient.R()
 	req.SetHeader("Content-Type", "application/json")
-	req.SetHeader(base.USERAGENT,serviceName)
+	req.SetHeader(base.USERAGENT, serviceName)
 	req.SetBody(payload)
 	resp, err := req.Patch(hsm + "/Inventory/RedfishEndpoints/" + xname)
 	if err != nil {
@@ -265,8 +265,8 @@ func QueryHSMState(xname string) (bool, error) {
 	log.Printf("DEBUG: GET from %s/Inventory/RedfishEndpoints/%s", hsm, xname)
 
 	resp, err := rClient.R().
-	             SetHeader(base.USERAGENT,serviceName).
-	             Get(hsm + "/Inventory/RedfishEndpoints/" + xname)
+		SetHeader(base.USERAGENT, serviceName).
+		Get(hsm + "/Inventory/RedfishEndpoints/" + xname)
 	if err != nil {
 		log.Printf("WARNING: Unable to get information for %s: %v", xname, err)
 		return false, err

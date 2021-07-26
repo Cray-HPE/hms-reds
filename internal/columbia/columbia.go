@@ -20,7 +20,6 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-
 package columbia
 
 import (
@@ -34,13 +33,13 @@ import (
 	"sync"
 	"time"
 
-	base "stash.us.cray.com/HMS/hms-base"
-	bmc_nwprotocol "stash.us.cray.com/HMS/hms-bmc-networkprotocol/pkg"
-	compcreds "stash.us.cray.com/HMS/hms-compcredentials"
-	"stash.us.cray.com/HMS/hms-certs/pkg/hms_certs"
-	"stash.us.cray.com/HMS/hms-reds/internal/model"
-	"stash.us.cray.com/HMS/hms-reds/internal/smdclient"
-	sstorage "stash.us.cray.com/HMS/hms-securestorage"
+	base "github.com/Cray-HPE/hms-base"
+	bmc_nwprotocol "github.com/Cray-HPE/hms-bmc-networkprotocol/pkg"
+	"github.com/Cray-HPE/hms-certs/pkg/hms_certs"
+	compcreds "github.com/Cray-HPE/hms-compcredentials"
+	"github.com/Cray-HPE/hms-reds/internal/model"
+	"github.com/Cray-HPE/hms-reds/internal/smdclient"
+	sstorage "github.com/Cray-HPE/hms-securestorage"
 )
 
 const VaultURLPrefix = "vault://"
@@ -347,7 +346,7 @@ type funcMap struct {
 	NotifyGone func(string) error
 }
 
-// Set up TLS-secured TLS transport.  Lots of variables can modify the 
+// Set up TLS-secured TLS transport.  Lots of variables can modify the
 // behavior of the Vault PKI -- this is mostly for testing.  The important
 // ones are:
 //
@@ -363,16 +362,16 @@ func setupRFTransport() error {
 
 	//Get some env vars that pertain to CA/TLS
 
-	if (forceInsec == false) {
+	if forceInsec == false {
 		envstr := os.Getenv("REDS_CA_URI")
-		if (envstr != "") {
+		if envstr != "" {
 			locCAUri = envstr
 		}
 	}
 	envstr = os.Getenv("REDS_LOG_INSECURE_FAILOVER")
-	if (envstr != "") {
-		yn,_ := strconv.ParseBool(envstr)
-		if (yn == false) {
+	if envstr != "" {
+		yn, _ := strconv.ParseBool(envstr)
+		if yn == false {
 			//defaults to true
 			hms_certs.ConfigParams.LogInsecureFailover = false
 		}
@@ -381,23 +380,23 @@ func setupRFTransport() error {
 	//These is for testing, or if we somehow change the PKI URLs.
 
 	envstr = os.Getenv("REDS_CA_PKI_URL")
-	if (envstr != "") {
-		log.Printf("INFO: Using CA PKI URL: '%s'",envstr)
+	if envstr != "" {
+		log.Printf("INFO: Using CA PKI URL: '%s'", envstr)
 		hms_certs.ConfigParams.VaultCAUrl = envstr
 	}
 	envstr = os.Getenv("REDS_VAULT_PKI_URL")
-	if (envstr != "") {
-		log.Printf("INFO: Using VAULT PKI URL: '%s'",envstr)
+	if envstr != "" {
+		log.Printf("INFO: Using VAULT PKI URL: '%s'", envstr)
 		hms_certs.ConfigParams.VaultPKIUrl = envstr
 	}
 	envstr = os.Getenv("REDS_VAULT_JWT_FILE")
-	if (envstr != "") {
-		log.Printf("INFO: Using Vault JWT file: '%s'",envstr)
+	if envstr != "" {
+		log.Printf("INFO: Using Vault JWT file: '%s'", envstr)
 		hms_certs.ConfigParams.VaultJWTFile = envstr
 	}
 	envstr = os.Getenv("REDS_K8S_AUTH_URL")
-	if (envstr != "") {
-		log.Printf("INFO: Using K8S AUTH URL: '%s'",envstr)
+	if envstr != "" {
+		log.Printf("INFO: Using K8S AUTH URL: '%s'", envstr)
 		hms_certs.ConfigParams.K8SAuthUrl = envstr
 	}
 
@@ -405,13 +404,13 @@ func setupRFTransport() error {
 
 	rfClientLock.Lock()
 	defer rfClientLock.Unlock()
-	if (locCAUri != "") {
-		log.Printf("INFO: Creating TLS-secured HTTP client pair for Redfish operations, CA URI: '%s'.",locCAUri)
+	if locCAUri != "" {
+		log.Printf("INFO: Creating TLS-secured HTTP client pair for Redfish operations, CA URI: '%s'.", locCAUri)
 	} else {
 		log.Printf("INFO: Creating non-validated HTTP client pair for Redfish operations (no CA bundle).")
 	}
-	rfClient,err = hms_certs.CreateHTTPClientPair(locCAUri,10)
-	if (err != nil) {
+	rfClient, err = hms_certs.CreateHTTPClientPair(locCAUri, 10)
+	if err != nil {
 		emsg := fmt.Errorf("ERROR: can't create TLS cert-enabled HTTP transport: %v",
 			err)
 		return emsg
@@ -422,8 +421,8 @@ func setupRFTransport() error {
 func caCB(caBundle string) {
 	log.Printf("INFO: CA bundle changed, re-creating Redfish HTTP transport.")
 	err := setupRFTransport()
-	if (err != nil) {
-		log.Printf("%v",err)
+	if err != nil {
+		log.Printf("%v", err)
 	} else {
 		log.Printf("INFO: Redfish HTTP transports created with new CA bundle.")
 	}
@@ -454,39 +453,39 @@ func StartColumbia(slsUrl string, hsmUrl string, syslogTarg string, ntpTarg stri
 	//Set up TLS-cert-enabled RF transport, insecure for SLS,HSM.
 
 	log.Printf("INFO: Creating insecure HTTP client for non-Redfish operation.")
-	hms_certs.InitInstance(nil,svcName)
-	client,_ = hms_certs.CreateHTTPClientPair("",10)
+	hms_certs.InitInstance(nil, svcName)
+	client, _ = hms_certs.CreateHTTPClientPair("", 10)
 
 	//Open TLS secured HTTP transport.  Fail over if we can't get it to work
 	//securely.
 
 	var ix int
-	for ix = 1; ix <= 10; ix ++ {
+	for ix = 1; ix <= 10; ix++ {
 		err = setupRFTransport()
-		if (err == nil) {
+		if err == nil {
 			log.Printf("INFO: Successfully set up secure Redfish transport.")
 			break
 		}
-		log.Printf("RF Secure Transport create attempt %d: %v", ix,err)
+		log.Printf("RF Secure Transport create attempt %d: %v", ix, err)
 		time.Sleep(3 * time.Second)
 	}
 
-	if (ix > 10) {
+	if ix > 10 {
 		log.Printf("ERROR: exhausted all retries creating TLS-secured Redfish transport, failing over insecure.")
 		forceInsec = true
 		err = setupRFTransport()
-		if (err != nil) {
+		if err != nil {
 			log.Printf("ERROR: can't create any RF HTTP transport!!!!!  No columbia monitoring will take place.")
 			return
 		}
 	}
 
 	caURI := os.Getenv("REDS_CA_URI")
-	if (caURI != "") {
-		log.Printf("Setting up CA bundle watcher for '%s'.",caURI)
-		err = hms_certs.CAUpdateRegister(caURI,caCB)
-		if (err != nil) {
-			log.Printf("ERROR setting up CA bundle watcher: %v",err)
+	if caURI != "" {
+		log.Printf("Setting up CA bundle watcher for '%s'.", caURI)
+		err = hms_certs.CAUpdateRegister(caURI, caCB)
+		if err != nil {
+			log.Printf("ERROR setting up CA bundle watcher: %v", err)
 			log.Printf("    CA bundle changes will not be applied!")
 		} else {
 			log.Printf("CA bundle watcher running.")
