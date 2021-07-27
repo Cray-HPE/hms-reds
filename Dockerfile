@@ -33,9 +33,9 @@ FROM build-base AS base
 RUN go env -w GO111MODULE=auto
 
 # Copy all the necessary files to the image.
-COPY cmd $GOPATH/src/stash.us.cray.com/HMS/hms-reds/cmd
-COPY internal $GOPATH/src/stash.us.cray.com/HMS/hms-reds/internal
-COPY vendor $GOPATH/src/stash.us.cray.com/HMS/hms-reds/vendor
+COPY cmd $GOPATH/src/github.com/Cray-HPE/hms-reds/cmd
+COPY internal $GOPATH/src/github.com/Cray-HPE/hms-reds/internal
+COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-reds/vendor
 
 ### Build Stage ###
 
@@ -46,8 +46,8 @@ RUN mkdir -p /etc/reds
 
 # Now build
 RUN set -ex \
-    && go build -v -i stash.us.cray.com/HMS/hms-reds/cmd/reds \
-    && go build -v -i stash.us.cray.com/HMS/hms-reds/cmd/vault_loader
+    && go build -v -i github.com/Cray-HPE/hms-reds/cmd/reds \
+    && go build -v -i github.com/Cray-HPE/hms-reds/cmd/vault_loader
 
 ### Final Stage ###
 

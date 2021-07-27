@@ -27,7 +27,7 @@ import (
 	"strconv"
 	"strings"
 
-	"stash.us.cray.com/HMS/hms-reds/internal/storage"
+	"github.com/Cray-HPE/hms-reds/internal/storage"
 )
 
 // action, switch, macaddr, portname

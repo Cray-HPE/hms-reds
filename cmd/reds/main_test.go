@@ -26,8 +26,8 @@ import (
 	"encoding/json"
 	"testing"
 
-	"stash.us.cray.com/HMS/hms-reds/internal/storage"
-	storage_factory "stash.us.cray.com/HMS/hms-reds/internal/storage/factory"
+	"github.com/Cray-HPE/hms-reds/internal/storage"
+	storage_factory "github.com/Cray-HPE/hms-reds/internal/storage/factory"
 )
 
 func Test_isReadyForHSMAdd(t *testing.T) {

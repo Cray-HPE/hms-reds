@@ -28,12 +28,12 @@ import (
 	"log"
 	"net/http"
 
+	base "github.com/Cray-HPE/hms-base"
+	"github.com/Cray-HPE/hms-reds/internal/columbia"
+	"github.com/Cray-HPE/hms-reds/internal/model"
+	"github.com/Cray-HPE/hms-reds/internal/storage"
+	sstorage "github.com/Cray-HPE/hms-securestorage"
 	"github.com/gorilla/mux"
-	base "stash.us.cray.com/HMS/hms-base"
-	"stash.us.cray.com/HMS/hms-reds/internal/columbia"
-	"stash.us.cray.com/HMS/hms-reds/internal/model"
-	"stash.us.cray.com/HMS/hms-reds/internal/storage"
-	sstorage "stash.us.cray.com/HMS/hms-securestorage"
 )
 
 // Channel for sending notifications

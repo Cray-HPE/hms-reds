@@ -29,8 +29,8 @@ import (
 	"reflect"
 	"testing"
 
-	hmetcd "stash.us.cray.com/HMS/hms-hmetcd"
-	"stash.us.cray.com/HMS/hms-reds/internal/storage"
+	hmetcd "github.com/Cray-HPE/hms-hmetcd"
+	"github.com/Cray-HPE/hms-reds/internal/storage"
 )
 
 func TestGetSwitchState_uninitialized(t *testing.T) {
@@ -311,14 +311,13 @@ Test what happens if a real ETCD URL won't work, should fail cleanly.
 func TestMakeStorage(t *testing.T) {
 	etcdi := new(Etcd)
 	err := etcdi.Init("mem:", false)
-	if (err != nil) {
-		t.Errorf("ETCD Init() with 'mem:' failed: %v",err)
+	if err != nil {
+		t.Errorf("ETCD Init() with 'mem:' failed: %v", err)
 	}
 
 	etcdi2 := new(Etcd)
-	err2 := etcdi2.Init("localhost:9897",false)
-	if (err2 == nil) {
+	err2 := etcdi2.Init("localhost:9897", false)
+	if err2 == nil {
 		t.Errorf("ETCD Init() with bogus URL did not fail!")
 	}
 }
-
