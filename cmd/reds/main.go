@@ -48,8 +48,8 @@ import (
 	"syscall"
 	"time"
 
+	base "github.com/Cray-HPE/hms-base"
 	"gopkg.in/resty.v1"
-	base "stash.us.cray.com/HMS/hms-base"
 
 	"github.com/Cray-HPE/hms-certs/pkg/hms_certs"
 	"github.com/Cray-HPE/hms-reds/internal/columbia"

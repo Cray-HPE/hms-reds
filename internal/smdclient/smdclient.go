@@ -31,11 +31,11 @@ import (
 	"net/http"
 	"time"
 
+	base "github.com/Cray-HPE/hms-base"
 	compcreds "github.com/Cray-HPE/hms-compcredentials"
 	"github.com/Cray-HPE/hms-reds/internal/storage"
 	sstorage "github.com/Cray-HPE/hms-securestorage"
 	"gopkg.in/resty.v1"
-	base "stash.us.cray.com/HMS/hms-base"
 )
 
 // HSMNotification is used to send newly discovered devices to HSM

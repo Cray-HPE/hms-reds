@@ -32,9 +32,9 @@ import (
 	"testing"
 	"time"
 
+	base "github.com/Cray-HPE/hms-base"
 	compcredentials "github.com/Cray-HPE/hms-compcredentials"
 	sstorage "github.com/Cray-HPE/hms-securestorage"
-	base "stash.us.cray.com/HMS/hms-base"
 )
 
 const SLS_BASE_HOSTNAME = "cray-sls"
