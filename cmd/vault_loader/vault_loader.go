@@ -28,8 +28,8 @@ import (
 	"os"
 	"time"
 
-	"stash.us.cray.com/HMS/hms-reds/internal/model"
-	securestorage "stash.us.cray.com/HMS/hms-securestorage"
+	"github.com/Cray-HPE/hms-reds/internal/model"
+	securestorage "github.com/Cray-HPE/hms-securestorage"
 )
 
 func main() {
@@ -76,7 +76,6 @@ func main() {
 	if err != nil {
 		fmt.Printf("Unable to store defaults for node BMCs: %s", err)
 	}
-
 
 	// Switch defaults
 	var switchCredentials model.SwitchCredentials

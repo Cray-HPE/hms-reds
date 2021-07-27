@@ -36,14 +36,14 @@ import (
 	"sync"
 	"time"
 
-	"stash.us.cray.com/HMS/hms-reds/internal/model"
-	"stash.us.cray.com/HMS/hms-reds/internal/smdclient"
+	"github.com/Cray-HPE/hms-reds/internal/model"
+	"github.com/Cray-HPE/hms-reds/internal/smdclient"
 
-	base "stash.us.cray.com/HMS/hms-base"
-	compcredentials "stash.us.cray.com/HMS/hms-compcredentials"
-	"stash.us.cray.com/HMS/hms-reds/internal/storage"
+	base "github.com/Cray-HPE/hms-base"
+	compcredentials "github.com/Cray-HPE/hms-compcredentials"
+	"github.com/Cray-HPE/hms-reds/internal/storage"
 
-	sstorage "stash.us.cray.com/HMS/hms-securestorage"
+	sstorage "github.com/Cray-HPE/hms-securestorage"
 )
 
 // Used to notify that a new mapping is available.  Ensure thread safety!
@@ -79,7 +79,6 @@ var modStorage storage.Storage = nil
 
 // Service/instance name
 var serviceName string
-
 
 /* INTERNAL data structures for storing the mapping */
 // Switch port has no private stuff
@@ -388,12 +387,12 @@ func GetSwitches() (*(map[string](Switch)), error) {
 
 	log.Printf("TRACE: GET from http://" + slsURL + "/" + SLS_SEARCH_HARDWARE_ENDPOINT + "?type=comptype_mgmt_switch&class=River")
 	url := "http://" + slsURL + "/" + SLS_SEARCH_HARDWARE_ENDPOINT + "?type=comptype_mgmt_switch&class=River"
-	req,qerr := http.NewRequest("GET",url,nil)
-	if (qerr != nil) {
-		log.Printf("WARNING: Can't create new HTTP request: %v",qerr)
-		return nil,qerr
+	req, qerr := http.NewRequest("GET", url, nil)
+	if qerr != nil {
+		log.Printf("WARNING: Can't create new HTTP request: %v", qerr)
+		return nil, qerr
 	}
-	base.SetHTTPUserAgent(req,serviceName)
+	base.SetHTTPUserAgent(req, serviceName)
 	resp, err := slsClient.Do(req)
 
 	if err != nil {
@@ -439,12 +438,12 @@ func GetSwitches() (*(map[string](Switch)), error) {
 func GetSwitchByName(switchName string) (*Switch, error) {
 	log.Printf("TRACE: GET from http://" + slsURL + "/hardware/" + switchName)
 	url := "http://" + slsURL + "/hardware/" + switchName
-	req,qerr := http.NewRequest("GET",url,nil)
-	if (qerr != nil) {
-		log.Printf("WARNING: Can't create new HTTP request: %v",qerr)
-		return nil,qerr
+	req, qerr := http.NewRequest("GET", url, nil)
+	if qerr != nil {
+		log.Printf("WARNING: Can't create new HTTP request: %v", qerr)
+		return nil, qerr
 	}
-	base.SetHTTPUserAgent(req,serviceName)
+	base.SetHTTPUserAgent(req, serviceName)
 
 	resp, err := slsClient.Do(req)
 
@@ -477,12 +476,12 @@ func GetSwitchByName(switchName string) (*Switch, error) {
 func GetSwitchPorts(switchName string) (*([](SwitchPort)), error) {
 	log.Printf("TRACE: GET from http://" + slsURL + "/" + SLS_SEARCH_HARDWARE_ENDPOINT + "?parent=" + switchName + "&type=comptype_mgmt_switch_connector")
 	url := "http://" + slsURL + "/" + SLS_SEARCH_HARDWARE_ENDPOINT + "?parent=" + switchName + "&type=comptype_mgmt_switch_connector"
-	req,qerr := http.NewRequest("GET",url,nil)
-	if (qerr != nil) {
-		log.Printf("WARNING: Can't create new HTTP request: %v",qerr)
-		return nil,qerr
+	req, qerr := http.NewRequest("GET", url, nil)
+	if qerr != nil {
+		log.Printf("WARNING: Can't create new HTTP request: %v", qerr)
+		return nil, qerr
 	}
-	base.SetHTTPUserAgent(req,serviceName)
+	base.SetHTTPUserAgent(req, serviceName)
 	resp, err := slsClient.Do(req)
 
 	if err != nil {
@@ -577,12 +576,12 @@ func GetManagementNodes() ([]GenericHardware, error) {
 	url := fmt.Sprintf("http://%s/%s?type=comptype_node&class=River&extra_properties.Role=Management",
 		slsURL, SLS_SEARCH_HARDWARE_ENDPOINT)
 	log.Printf("TRACE: GET from %s", url)
-	req,qerr := http.NewRequest("GET",url,nil)
-	if (qerr != nil) {
-		log.Printf("WARNING: Can't create new HTTP request: %v",qerr)
-		return nil,qerr
+	req, qerr := http.NewRequest("GET", url, nil)
+	if qerr != nil {
+		log.Printf("WARNING: Can't create new HTTP request: %v", qerr)
+		return nil, qerr
 	}
-	base.SetHTTPUserAgent(req,serviceName)
+	base.SetHTTPUserAgent(req, serviceName)
 
 	resp, err := slsClient.Do(req)
 
@@ -616,8 +615,8 @@ func GetConnectorsByBMC(xname string) ([]GenericHardware, error) {
 	url := fmt.Sprintf("http://%s/%s?node_nics=%s",
 		slsURL, SLS_SEARCH_HARDWARE_ENDPOINT, xname)
 	log.Printf("TRACE: GET from %s", url)
-	req,qerr := http.NewRequest("GET", url, nil)
-	if (qerr != nil) {
+	req, qerr := http.NewRequest("GET", url, nil)
+	if qerr != nil {
 		log.Printf("WARNING: Can't create new HTTP request: %v", qerr)
 		return nil, qerr
 	}

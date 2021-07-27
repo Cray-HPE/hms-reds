@@ -30,13 +30,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"stash.us.cray.com/HMS/hms-reds/internal/columbia"
-	"stash.us.cray.com/HMS/hms-reds/internal/mapping"
-	"stash.us.cray.com/HMS/hms-reds/internal/model"
-	"stash.us.cray.com/HMS/hms-reds/internal/storage"
-	storage_factory "stash.us.cray.com/HMS/hms-reds/internal/storage/factory"
-	"stash.us.cray.com/HMS/hms-reds/internal/storage/mock"
-	sstorage "stash.us.cray.com/HMS/hms-securestorage"
+	"github.com/Cray-HPE/hms-reds/internal/columbia"
+	"github.com/Cray-HPE/hms-reds/internal/mapping"
+	"github.com/Cray-HPE/hms-reds/internal/model"
+	"github.com/Cray-HPE/hms-reds/internal/storage"
+	storage_factory "github.com/Cray-HPE/hms-reds/internal/storage/factory"
+	"github.com/Cray-HPE/hms-reds/internal/storage/mock"
+	sstorage "github.com/Cray-HPE/hms-securestorage"
 )
 
 type badReq struct {

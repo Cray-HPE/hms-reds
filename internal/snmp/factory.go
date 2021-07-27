@@ -26,9 +26,9 @@ import (
 	"log"
 	"os"
 
-	"stash.us.cray.com/HMS/hms-reds/internal/snmp/common"
-	"stash.us.cray.com/HMS/hms-reds/internal/snmp/dell"
-	"stash.us.cray.com/HMS/hms-reds/internal/storage"
+	"github.com/Cray-HPE/hms-reds/internal/snmp/common"
+	"github.com/Cray-HPE/hms-reds/internal/snmp/dell"
+	"github.com/Cray-HPE/hms-reds/internal/storage"
 )
 
 func GetSwitch(name string, storage *storage.Storage) (common.Implementation, error) {

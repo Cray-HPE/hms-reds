@@ -29,10 +29,10 @@ import (
 	"regexp"
 	"time"
 
-	"stash.us.cray.com/HMS/hms-reds/internal/mapping"
-	"stash.us.cray.com/HMS/hms-reds/internal/snmp"
-	"stash.us.cray.com/HMS/hms-reds/internal/snmp/common"
-	"stash.us.cray.com/HMS/hms-reds/internal/storage"
+	"github.com/Cray-HPE/hms-reds/internal/mapping"
+	"github.com/Cray-HPE/hms-reds/internal/snmp"
+	"github.com/Cray-HPE/hms-reds/internal/snmp/common"
+	"github.com/Cray-HPE/hms-reds/internal/storage"
 )
 
 type switchinfo struct {
