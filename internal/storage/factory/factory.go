@@ -25,8 +25,8 @@ package factory
 import (
 	"errors"
 
-	"stash.us.cray.com/HMS/hms-reds/internal/storage"
-	"stash.us.cray.com/HMS/hms-reds/internal/storage/etcd"
+	"github.com/Cray-HPE/hms-reds/internal/storage"
+	"github.com/Cray-HPE/hms-reds/internal/storage/etcd"
 )
 
 const datastoreTypeEtcd = "etcd"
@@ -36,7 +36,7 @@ func MakeStorage(dstype string, url string, insecure bool) (storage.Storage, err
 	var ret storage.Storage
 
 	if dstype != datastoreTypeEtcd {
-		return nil, errors.New("datastore-type must be \""  + datastoreTypeEtcd + "\"")
+		return nil, errors.New("datastore-type must be \"" + datastoreTypeEtcd + "\"")
 	}
 
 	ret = new(etcd.Etcd)
