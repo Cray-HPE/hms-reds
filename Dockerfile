@@ -72,7 +72,7 @@ ENV SLS_ADDR="http://cray-sls"
 
 # Include curl, net-snmp and the git client in the final image.
 RUN set -ex \
-    && apk update \
+    && apk -U upgrade \
     && apk add --no-cache \
         curl \
         net-snmp \

@@ -26,7 +26,7 @@ VERSION ?= $(shell cat .version)
 # Helm Chart
 CHART_PATH ?= kubernetes
 CHART_NAME ?= cray-hms-reds
-CHART_VERSION ?= local
+CHART_VERSION ?= $(shell cat .version)
 
 test:
 	./runUnitTest.sh
