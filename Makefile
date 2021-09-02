@@ -28,19 +28,20 @@ CHART_PATH ?= kubernetes
 CHART_NAME ?= cray-hms-reds
 CHART_VERSION ?= $(shell cat .version)
 
-test:
-	./runUnitTest.sh
 
-snyk:
-	./runSnyk.sh
-
-coverage:
-	./runCoverage.sh
+all: image chart unittest
 
 image:
-	docker build --pull ${DOCKER_ARGS} --tag '${NAME}:${VERSION}' .
+	docker build ${NO_CACHE} --pull ${DOCKER_ARGS} --tag '${NAME}:${VERSION}' .
 
 chart:
 	helm repo add cray-algol60 https://artifactory.algol60.net/artifactory/csm-helm-charts
 	helm dep up ${CHART_PATH}/${CHART_NAME}
 	helm package ${CHART_PATH}/${CHART_NAME} -d ${CHART_PATH}/.packaged --version ${CHART_VERSION}
+
+unittest:
+	./runUnitTest.sh
+
+snyk:
+	./runSnyk.sh
+

@@ -16,6 +16,7 @@ pipeline {
         IS_STABLE = getBuildIsStable()
         VERSION = getDockerBuildVersion(isStable: env.IS_STABLE)
         DOCKER_ARGS = getDockerBuildArgs(name: env.NAME, description: env.DESCRIPTION)
+        NO_CACHE = "--no-cache"
         CHART_NAME = "cray-hms-reds"
         CHART_VERSION = getChartVersion(version: env.VERSION)
     }
@@ -34,15 +35,9 @@ pipeline {
             }
         }
 
-        stage("Test") {
+        stage("Run Unit Tests") {
             steps {
-                sh "make test"
-            }
-        }
-
-        stage("Coverage") {
-            steps {
-                sh "make coverage"
+                sh "make unittest"
             }
         }
 
