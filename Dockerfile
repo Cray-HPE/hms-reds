@@ -22,11 +22,15 @@
 
 # Dockerfile for building hms-reds.
 
+### Build Base Stage ###
+
 FROM arti.dev.cray.com/baseos-docker-master-local/golang:1.16-alpine3.13 AS build-base
 
 RUN set -ex \
     && apk -U upgrade \
     && apk add build-base
+
+### Base Stage ###
 
 FROM build-base AS base
 
@@ -82,6 +86,9 @@ RUN set -ex \
 # Get reds and reds loader from the builder stage.
 COPY --from=builder /go/reds /usr/local/bin
 COPY --from=builder /go/vault_loader /usr/local/bin
+
+# nobody 65534:65534
+USER 65534:65534
 
 # Set up the command to start the service, the run the init script.
 #CMD snmptrapd -f -Lo -c /etc/snmp/snmptrapd.conf -F '%B %#v\n' -OnQt | reds $REDS_OPTS $( [ -n "$HSM_URL" ] && echo --hsm=$HSM_URL ) --datastore=$DATASTORE_URL
