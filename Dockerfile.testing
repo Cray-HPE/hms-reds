@@ -20,14 +20,35 @@
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
 
-FROM cray/reds-base
+### Build Base Stage ###
+
+FROM arti.dev.cray.com/baseos-docker-master-local/golang:1.16-alpine3.13 AS build-base
+
+RUN set -ex \
+    && apk -U upgrade \
+    && apk add build-base
+
+### Base Stage ###
+
+FROM build-base AS base
+
+RUN go env -w GO111MODULE=auto
+
+# Copy all the necessary files to the image.
+COPY cmd $GOPATH/src/github.com/Cray-HPE/hms-reds/cmd
+COPY internal $GOPATH/src/github.com/Cray-HPE/hms-reds/internal
+COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-reds/vendor
+
+### Final Stage ###
+
+FROM base
 
 # Run unit tests...
 RUN set -ex && \
-    go test -v github.com/Cray-HPE/hms-reds/cmd/reds && \
-    go test -v github.com/Cray-HPE/hms-reds/internal/snmp/common && \
-    go test -v github.com/Cray-HPE/hms-reds/internal/snmp/dell && \
-    go test -v github.com/Cray-HPE/hms-reds/internal/storage && \
-    go test -v github.com/Cray-HPE/hms-reds/internal/storage/etcd && \
-    go test -v github.com/Cray-HPE/hms-reds/internal/mapping && \
-    go test -v github.com/Cray-HPE/hms-reds/internal/model
+    go test -cover -v github.com/Cray-HPE/hms-reds/cmd/reds && \
+    go test -cover -v github.com/Cray-HPE/hms-reds/internal/snmp/common && \
+    go test -cover -v github.com/Cray-HPE/hms-reds/internal/snmp/dell && \
+    go test -cover -v github.com/Cray-HPE/hms-reds/internal/storage && \
+    go test -cover -v github.com/Cray-HPE/hms-reds/internal/storage/etcd && \
+    go test -cover -v github.com/Cray-HPE/hms-reds/internal/mapping && \
+    go test -cover -v github.com/Cray-HPE/hms-reds/internal/model
