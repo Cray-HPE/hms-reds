@@ -80,8 +80,7 @@ RUN set -ex \
     && apk add --no-cache \
         curl \
         net-snmp \
-        git \
-    && echo -e "createUser testuser MD5 testpass1 DES testpass2\nauthUser log,execute,net testuser" > /etc/snmp/snmptrapd.conf
+        git
 
 # Get reds and reds loader from the builder stage.
 COPY --from=builder /go/reds /usr/local/bin
