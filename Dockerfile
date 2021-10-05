@@ -79,8 +79,7 @@ RUN set -ex \
     && apk -U upgrade \
     && apk add --no-cache \
         curl \
-        net-snmp \
-        git
+        net-snmp
 
 # Get reds and reds loader from the builder stage.
 COPY --from=builder /go/reds /usr/local/bin
