@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.21.0] - 2021-10-27
+
+### Added
+
+- CASMHMS-5055 - Added REDS CT test RPM.
+
+## [1.20.8] - 2021-10-05
+
+### Removed
+
+- Removed SNMP creds from Dockerfile.
+
 ## [1.20.7] - 2021-09-22
 
 ### Changed
