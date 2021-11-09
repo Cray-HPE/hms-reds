@@ -7,9 +7,13 @@
 #   tag: "" (default = "latest")
 #   pullPolicy: "" (default = "IfNotPresent")
 
-imagesHost: "dtr.dev.cray.com"
+image:
+  repository: artifactory.algol60.net/csm-docker/stable/cray-reds
+  pullPolicy: IfNotPresent
+
 # Version of the kubectl pod to use when upgrading/downgrading charts
-dockerKubectlTag: &dockerKubectlTag 0.2.0
+dockerKubectlTag: &dockerKubectlTag 1.19.15
+dockerKubectlRepository: artifactory.algol60.net/csm-docker/stable/docker-kubectl
 hms_ca_uri: ""
 
 cray-service:
@@ -23,7 +27,7 @@ cray-service:
     cray-reds:
       name: "cray-reds"
       image:
-        repository: "cray/cray-reds"
+        repository: artifactory.algol60.net/csm-docker/stable/cray-reds
       env:
         - name: ETCD_HOST
           value: cray-reds-etcd-client

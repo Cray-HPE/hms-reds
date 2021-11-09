@@ -1,5 +1,17 @@
-apiVersion: v1
-description: "Kubernetes resources for cray-hms-reds"
+apiVersion: v2
 name: "cray-hms-reds"
-home: "HMS/hms-reds"
-version: 1.21.0
+version: 1.22.0
+description: "Kubernetes resources for cray-hms-reds"
+home: "https://github.com/Cray-HPE/hms-reds"
+sources:
+  - "https://github.com/Cray-HPE/hms-reds"
+dependencies:
+  - name: cray-service
+    version: "~7.0.0"
+    repository: https://artifactory.algol60.net/artifactory/csm-helm-charts
+maintainers:
+  - name: Hardware Management
+    url: https://github.com/orgs/Cray-HPE/teams/hardware-management
+appVersion: "1.22.0"
+annotations:
+  artifacthub.io/images: ""

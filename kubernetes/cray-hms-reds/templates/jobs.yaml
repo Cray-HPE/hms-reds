@@ -25,7 +25,7 @@ spec:
                 secretKeyRef:
                   name: cray-reds-credentials
                   key: vault_switch_defaults
-          image: "{{ include "cray-hms-reds.image-prefix" .Values }}cray/cray-reds:{{ include "cray-hms-reds.imageTag" . }}"
+          image: {{ .Values.image.repository }}:{{ default .Chart.AppVersion .Values.image.tag }}
           command: ["vault_loader"]
 ---
 apiVersion: batch/v1
@@ -46,7 +46,7 @@ spec:
       serviceAccountName: "cray-reds-service-account"
       containers:
         - name: job-deleter
-          image: "{{ include "cray-hms-reds.image-prefix" .Values }}loftsman/docker-kubectl:{{ .Values.dockerKubectlTag }}"
+          image: {{ .Values.dockerKubectlRepository }}:{{ .Values.dockerKubectlTag }}
           command:
           - /bin/sh
           - -c
