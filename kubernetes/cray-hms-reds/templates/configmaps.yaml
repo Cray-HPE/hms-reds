@@ -1,8 +1,0 @@
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: reds-cacert-info
-data:
-  CA_URI: "{{ .Values.hms_ca_uri }}"
-
