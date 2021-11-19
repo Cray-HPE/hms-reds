@@ -7,13 +7,20 @@
 #   tag: "" (default = "latest")
 #   pullPolicy: "" (default = "IfNotPresent")
 
+global:
+  appVersion: "1.22.0"
+
 image:
   repository: artifactory.algol60.net/csm-docker/stable/cray-reds
   pullPolicy: IfNotPresent
 
 # Version of the kubectl pod to use when upgrading/downgrading charts
-dockerKubectlTag: &dockerKubectlTag 1.19.15
-dockerKubectlRepository: artifactory.algol60.net/csm-docker/stable/docker-kubectl
+kubectl:
+  image:
+    repository: artifactory.algol60.net/csm-docker/stable/docker-kubectl
+    tag: 1.19.15
+    pullPolicy: IfNotPresent
+
 hms_ca_uri: ""
 
 cray-service:
