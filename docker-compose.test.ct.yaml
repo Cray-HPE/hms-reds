@@ -45,11 +45,10 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      - HMS_URL=http://cray-smd:27779
+      - HSM_URL=http://cray-smd:27779
       - CRAY_VAULT_AUTH_PATH=auth/token/create
       - CRAY_VAULT_ROLE_FILE=configs/namespace
       - CRAY_VAULT_JWT_FILE=configs/token
-      - S3_ENDPOINT=http://s3
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=hms
       - VAULT_KEYPATH=hms-creds
@@ -99,8 +98,8 @@ services:
 #    hostname: hms-redfish-redis
 #    networks:
 #      - reds
-  hmsds-postgres:
-    hostname: hmsds-postgres
+  postgres:
+    hostname: postgres
     image: artifactory.algol60.net/docker.io/library/postgres:11-alpine
     environment:
       - POSTGRES_PASSWORD=hmsdsuser
@@ -111,17 +110,17 @@ services:
   cray-smd-init:
     image: artifactory.algol60.net/csm-docker/stable/cray-smd:1.48.0
     environment:
-      - SMD_DBHOST=hmsds-postgres
+      - SMD_DBHOST=postgres
       - SMD_DBPORT=5432
     depends_on:
-      - hmsds-postgres
+      - postgres
     networks:
       - reds
     command: /entrypoint.sh smd-init
   cray-smd:
     image: artifactory.algol60.net/csm-docker/stable/cray-smd:1.48.0
     environment:
-      - POSTGRES_HOST=hmsds-postgres
+      - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - RF_MSG_HOST=kafka:9092:cray-dmtf-resource-event
       - CRAY_VAULT_AUTH_PATH=auth/token/create
