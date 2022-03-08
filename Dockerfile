@@ -85,6 +85,9 @@ RUN set -ex \
 COPY --from=builder /go/reds /usr/local/bin
 COPY --from=builder /go/vault_loader /usr/local/bin
 
+COPY configs configs
+
+
 # nobody 65534:65534
 USER 65534:65534
 
