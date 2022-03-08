@@ -22,7 +22,7 @@
 
 ### Build Base Stage ###
 
-FROM arti.dev.cray.com/baseos-docker-master-local/golang:1.16-alpine3.13 AS build-base
+FROM artifactory.algol60.net/docker.io/library/golang:1.16-alpine AS build-base
 
 RUN set -ex \
     && apk -U upgrade \
@@ -43,12 +43,15 @@ COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-reds/vendor
 
 FROM base
 
-# Run unit tests...
-RUN set -ex && \
-    go test -cover -v github.com/Cray-HPE/hms-reds/cmd/reds && \
-    go test -cover -v github.com/Cray-HPE/hms-reds/internal/snmp/common && \
-    go test -cover -v github.com/Cray-HPE/hms-reds/internal/snmp/dell && \
-    go test -cover -v github.com/Cray-HPE/hms-reds/internal/storage && \
-    go test -cover -v github.com/Cray-HPE/hms-reds/internal/storage/etcd && \
-    go test -cover -v github.com/Cray-HPE/hms-reds/internal/mapping && \
-    go test -cover -v github.com/Cray-HPE/hms-reds/internal/model
+CMD ["sh", "-c", "go test -cover -v github.com/Cray-HPE/hms-reds/cmd/reds; \
+  go test -cover -v github.com/Cray-HPE/hms-reds/internal/...  "]
+
+## Run unit tests...
+#RUN set -ex && \
+#    go test -cover -v github.com/Cray-HPE/hms-reds/cmd/reds && \
+#    go test -cover -v github.com/Cray-HPE/hms-reds/internal/snmp/common && \
+#    go test -cover -v github.com/Cray-HPE/hms-reds/internal/snmp/dell && \
+#    go test -cover -v github.com/Cray-HPE/hms-reds/internal/storage && \
+#    go test -cover -v github.com/Cray-HPE/hms-reds/internal/storage/etcd && \
+#    go test -cover -v github.com/Cray-HPE/hms-reds/internal/mapping && \
+#    go test -cover -v github.com/Cray-HPE/hms-reds/internal/model
