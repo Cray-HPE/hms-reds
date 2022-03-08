@@ -55,11 +55,14 @@ services:
       - VAULT_SKIP_VERIFY=true
       - VAULT_ENABLED=true
       - DATASTORE_URL=http://etcd:2379
+      - SLS_ADDR=cray-sls:8376/v1
     networks:
       - reds
     depends_on:
       - etcd
       - cray-smd
+      - cray-sls-preload
+      - cray-sls
       # - cray-hms-hmcollector
       # - redfish-simulator
       - vault-kv-enabler
@@ -213,3 +216,50 @@ services:
 #        aliases:
 #          - x0c0s1b0
 #          - x0c0s2b0
+  cray-sls-postgres:
+    hostname: sls-postgres
+    image: artifactory.algol60.net/docker.io/library/postgres:11-alpine
+    environment:
+      - POSTGRES_USER=slsuser
+      - POSTGRES_DB=sls
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    networks:
+      - reds
+  cray-sls-init:
+    image: artifactory.algol60.net/csm-docker/stable/cray-sls:1.16.0
+    command: ["sls-init"]
+    environment:
+      - POSTGRES_HOST=sls-postgres
+      - DBOPTS=sslmode=disable
+      - DBUSER=slsuser
+    depends_on:
+      - cray-sls-postgres
+    networks:
+      - reds
+  cray-sls:
+    image: artifactory.algol60.net/csm-docker/stable/cray-sls:1.16.0
+    environment:
+      - POSTGRES_HOST=cray-sls-postgres
+      - DBOPTS=sslmode=disable
+      - DBUSER=slsuser
+      - CRAY_VAULT_AUTH_PATH=auth/token/create
+      - CRAY_VAULT_ROLE_FILE=configs/namespace
+      - CRAY_VAULT_JWT_FILE=configs/token
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_TOKEN=hms
+      - VAULT_KEYPATH=hms-creds
+    depends_on:
+      - cray-sls-postgres
+      - cray-sls-init
+      - vault
+    networks:
+      - reds
+
+  cray-sls-preload:
+    build:
+      context: test/ct/
+      dockerfile: Dockerfile.sls-preload.Dockerfile
+    depends_on:
+      - cray-sls
+    networks:
+      - reds

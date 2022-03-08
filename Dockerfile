@@ -93,4 +93,4 @@ USER 65534:65534
 
 # Set up the command to start the service, the run the init script.
 #CMD snmptrapd -f -Lo -c /etc/snmp/snmptrapd.conf -F '%B %#v\n' -OnQt | reds $REDS_OPTS $( [ -n "$HSM_URL" ] && echo --hsm=$HSM_URL ) --datastore=$DATASTORE_URL
-CMD reds $REDS_OPTS $( [ -n "$HSM_URL" ] && echo --hsm=$HSM_URL ) --datastore=$DATASTORE_URL
+CMD reds $REDS_OPTS $( [ -n "$HSM_URL" ] && echo --hsm=$HSM_URL ) --sls=$SLS_ADDR --datastore=$DATASTORE_URL
