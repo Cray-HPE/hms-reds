@@ -44,14 +44,13 @@ COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-reds/vendor
 FROM base
 
 CMD ["sh", "-c", "go test -cover -v github.com/Cray-HPE/hms-reds/cmd/reds; \
-  go test -cover -v github.com/Cray-HPE/hms-reds/internal/...  "]
+    go test -cover -v github.com/Cray-HPE/hms-reds/internal/snmp/common; \
+    go test -cover -v github.com/Cray-HPE/hms-reds/internal/snmp/common; \
+    go test -cover -v github.com/Cray-HPE/hms-reds/internal/snmp/dell; \
+    go test -cover -v github.com/Cray-HPE/hms-reds/internal/storage; \
+    go test -cover -v github.com/Cray-HPE/hms-reds/internal/storage/etcd; \
+    go test -cover -v github.com/Cray-HPE/hms-reds/internal/mapping; \
+    go test -cover -v github.com/Cray-HPE/hms-reds/internal/model"]
 
-## Run unit tests...
-#RUN set -ex && \
-#    go test -cover -v github.com/Cray-HPE/hms-reds/cmd/reds && \
-#    go test -cover -v github.com/Cray-HPE/hms-reds/internal/snmp/common && \
-#    go test -cover -v github.com/Cray-HPE/hms-reds/internal/snmp/dell && \
-#    go test -cover -v github.com/Cray-HPE/hms-reds/internal/storage && \
-#    go test -cover -v github.com/Cray-HPE/hms-reds/internal/storage/etcd && \
-#    go test -cover -v github.com/Cray-HPE/hms-reds/internal/mapping && \
-#    go test -cover -v github.com/Cray-HPE/hms-reds/internal/model
+    # I dont know why:  #go test -cover -v github.com/Cray-HPE/hms-reds/internal/... wouldnt be a good idea.
+    # I ran it; and there is something wrong with my IDE or with smdclient.go
