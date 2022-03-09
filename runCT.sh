@@ -48,7 +48,7 @@ function cleanup() {
 echo "Starting containers..."
 docker-compose build --no-cache
 docker-compose up  -d cray-reds #this will stand up everything except for the integration test container
-
+sleep 10 #reds might need some time to come up...
 docker-compose up --exit-code-from ct-tests-smoke ct-tests-smoke
 test_result=$?
 echo "Cleaning up containers..."
