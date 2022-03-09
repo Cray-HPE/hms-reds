@@ -5,12 +5,12 @@ info:
     and geolocation of Redfish-enabled BMCs on River compute nodes. It does so through a
     combination of methods:
     watching switches for new MAC addresses via SNMP and booting a "discovery ramdisk".
-   
+    
     This API assumes that you have a general familiarity with SNMP, IPMI, and Redfish protocols and
     the operation of network switches.
     
     REDS involves the following tasks:
- 
+    
     * **Endpoint discovery**: This process determines that a new Redfish Endpoint (IPMI-capable BMC)
     is available on the network. 
     
@@ -37,21 +37,6 @@ info:
     assignment could be carried out via DHCP or other similar mechanism.
     
     
-    ## Resources
-    
-    ### /credentials
-    
-    Generate new credentials for a specific BMC on a River compute node. This is intended
-    for interaction between the ramdisk (booted on new hardware) and daemon (on the SMS).
-    It is not intended for human use.
-    
-    ### /discovery
-    
-    Accessed by nodes running the discovery and initialization initramfs
-    to signal that the process is complete. This is intended for interaction between 
-    the ramdisk (booted on new hardware) and daemon (on the non-compute node). It is not
-    intended for human use.
-    
     ## Workflows
     
     ### Add River Compute Nodes
@@ -61,22 +46,18 @@ info:
     ### Remove River Compute Nodes
     
     SLS is now used to remove components. See "Remove Hardware" in the SLS documentation.
-    
-  version: "0.1"
+
+  version: "1.0"
   title: "River Endpoint Discovery Service"
   license:
-    name: "Cray Proprietary"
+    name: "MIT"
 host: "sms"
 basePath: "/apis/reds/v1"
 tags:
-- name: "Credentials"
-  description: "Get or change credentials for node BMCs"
-- name: "Discovery"
-  description: "Access to discovery functions"
-- name: "Service Info"
-  description: "Service information APIs such as readiness and liveness."
+  - name: "Service Info"
+    description: "Service information APIs such as readiness and liveness."
 schemes:
-- "https"
+  - "https"
 produces:
   - application/json
 consumes:
@@ -130,96 +111,3 @@ paths:
             Network API call success
         default:
           description: "Unexpected error."
-
-  /credentials:
-    post:
-      tags:
-      - "Credentials"
-      - "cli_ignore"
-      operationId: "credsByMAC_post"
-      summary: "Generate new credentials for the BMC"
-      description: "Generate new credentials for the BMC as identified by the request payload.
-      This is a POST request since credentials are generated."
-      consumes:
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-        - in: body
-          name: addesses
-          schema:
-            $ref: "#/definitions/SystemAddresses"
-      responses:
-        200:
-          description: "New credentials generated and included in the response"
-          schema:
-            $ref: "#/definitions/BMCCredentials"
-        405:
-          description: "Invalid input"
-    
-  /discovery:
-    put:
-      tags:
-      - "Discovery"
-      - "cli_ignore"
-      operationId: "discovery_put"
-      summary: "Signal completion of initialization and discovery"
-      description: "This resource is accessed by nodes running the discovery and initialization
-      initramfs to signal that the process is complete."
-      parameters:
-        - in: body
-          name: macAddesses
-          schema:
-            $ref: "#/definitions/SystemAddresses"
-      responses:
-        200:
-          description: OK
-        405:
-          description: "Invalid input"
-
-definitions:
-  BMCCredentials:
-    description: "An object which contains the credentials for a BMC."
-    type: "object"
-    properties:
-      username:
-        description: "The username portion of the BMC credentials."
-        type: "string"
-      password:
-        description: "The password portion of the BMC credentials."
-        type: "string"
-  SystemAddresses:
-    description: "An object to convey all the addresses assigned to a BMC"
-    type: "object"
-    properties:
-      addresses:
-        description: |
-          An array of addresses on a per-interface basis.  This includes MAC addresses and
-          IP addresses
-          
-          
-          No correlation must be maintained between the various items in the addresses array
-          after they arrive at the server. While they are all on the same physical machine
-          and should be set to identical credentials, only one BMC (and therefore only one
-          MAC address) should be configured as the BMC. The rest will be ignored. Additionally,
-          it is recommended that the MAC address be used as a primary key in any storage
-          configuration, as it is a unique, non-volatile identifier for the device.
-        type: "array"
-        items:
-          type: "object"
-          properties:
-            macAddress:
-              type: "string"
-              description: "A MAC address, encoded in lowercase hexadecimal, without separators."
-            IPAddresses:
-              type: "array"
-              items:
-                type: "object"
-                properties:
-                  addressType:
-                    type: "string"
-                    enum: ["IPv4", "IPv6"]
-                    description: "The type of the IP address conveyed.  Either IPv4 or IPv6."
-                  address:
-                    type: "string"
-                    description: "The address itself."

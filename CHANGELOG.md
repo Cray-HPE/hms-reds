@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Converted builds to github actions.
+- removed RPM builds
+- created ct test image
+- removed deprecated code paths from reds http router
 
 ## [1.21.0] - 2021-10-27
 

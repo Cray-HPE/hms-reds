@@ -24,15 +24,12 @@
 NAME ?= cray-reds
 VERSION ?= $(shell cat .version)
 
-all: image unittest integration  snyk ct_image ct
+all: image unittest  snyk ct_image ct
 
 image:
 	docker build --pull ${DOCKER_ARGS} --tag '${NAME}:${VERSION}' .
 unittest:
 	./runUnitTest.sh
-
-integration:
-	./runIntegration.sh
 
 snyk:
 	./runSnyk.sh

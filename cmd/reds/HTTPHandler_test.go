@@ -32,10 +32,7 @@ import (
 
 	"github.com/Cray-HPE/hms-reds/internal/columbia"
 	"github.com/Cray-HPE/hms-reds/internal/mapping"
-	"github.com/Cray-HPE/hms-reds/internal/model"
-	"github.com/Cray-HPE/hms-reds/internal/storage"
 	storage_factory "github.com/Cray-HPE/hms-reds/internal/storage/factory"
-	"github.com/Cray-HPE/hms-reds/internal/storage/mock"
 	sstorage "github.com/Cray-HPE/hms-securestorage"
 )
 
@@ -132,135 +129,6 @@ func TestDoLivenessCheck(t *testing.T) {
 	if status := rr.Code; status != http.StatusNoContent {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNoContent)
-	}
-}
-
-func TestDoPostCredentials(t *testing.T) {
-	// Pre-configuration: set up package global storage variable
-	ss := mock.NewKvMock()
-	credStorage = model.NewRedsCredStore(model.CredentialsKeyPrefix, ss)
-	credDefaults := map[string]model.RedsCredentials{"Cray": {Username: "groot", Password: "terminal6"}, "Cray ACE": {Username: "ace", Password: "ace"}, "Gigabyte": {Username: "Administrator", Password: "superuser"}}
-	ss.Store(model.CredentialsKeyPrefix+"/defaults", credDefaults)
-
-	// Test no request body
-	rr := GetHTTPResponse(t, doPostCredentials, "POST", "/v1/credentials", nil, false, "", "")
-	// Check the status code is what we expect.
-	if status := rr.Code; status != http.StatusBadRequest {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusBadRequest)
-	}
-
-	// Test incorrectly formatted request body
-	rr = GetHTTPResponse(t, doPostCredentials, "POST", "/v1/credentials", bytes.NewBuffer(json.RawMessage(`{"foo":"bar"`)), false, "", "")
-	// Check the status code is what we expect.
-	if status := rr.Code; status != http.StatusBadRequest {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusBadRequest)
-	}
-
-	// Test correctly formatted request body with invalid data
-	rr = GetHTTPResponse(t, doPostCredentials, "POST", "/v1/credentials", bytes.NewBuffer(json.RawMessage(`{"addresses":[]}`)), false, "", "")
-	// Check the status code is what we expect.
-	if status := rr.Code; status != http.StatusBadRequest {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusBadRequest)
-	}
-
-	// Test correctly formatted request with MAC addresses
-	rr = GetHTTPResponse(t, doPostCredentials, "POST", "/v1/credentials", bytes.NewBuffer(json.RawMessage(`{"addresses":[{"macAddress":"00beef151337","IPAddresses":[{"addressType":"IPv4","address":"0.0.0.0"},{"addressType":"IPv6","address":"1:20:300:4000:5:60:700:8000"}]},{"macAddress":"00d00d15af00","IPAddresses":[{"addressType":"IPv4","address":"1.2.3.4"},{"addressType":"IPv6","address":"8:70:600:5000:4:30:200:1000"}]}]}`)), false, "", "")
-	// Check the status code is what we expect.
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusOK)
-	} else {
-		expected := string(json.RawMessage(`{"username":"groot","password":"terminal6"}`)) + "\n"
-		if rr.Body.String() != expected {
-			t.Errorf("Unexpected response body: got %v, want %v",
-				rr.Body.String(), expected)
-		}
-	}
-}
-
-func TestDoPutDiscovery(t *testing.T) {
-	var httpReportIn HTTPReport
-	// Pre-configuration: set up package global storage variable
-	ss := mock.NewKvMock()
-	credStorage = model.NewRedsCredStore(model.CredentialsKeyPrefix, ss)
-
-	// Test no request body
-	rr := GetHTTPResponse(t, doPutDiscovery, "PUT", "/v1/discovery", nil, false, "", "")
-	// Check the status code is what we expect.
-	if status := rr.Code; status != http.StatusBadRequest {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusBadRequest)
-	}
-
-	// Test incorrectly formatted request body
-	rr = GetHTTPResponse(t, doPutDiscovery, "PUT", "/v1/discovery", bytes.NewBuffer(json.RawMessage(`{"foo":"bar"`)), false, "", "")
-	// Check the status code is what we expect.
-	if status := rr.Code; status != http.StatusBadRequest {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusBadRequest)
-	}
-
-	// Test correctly formatted request body with invalid data
-	rr = GetHTTPResponse(t, doPutDiscovery, "PUT", "/v1/discovery", bytes.NewBuffer(json.RawMessage(`{"addresses":[]}`)), false, "", "")
-	// Check the status code is what we expect.
-	if status := rr.Code; status != http.StatusBadRequest {
-		t.Errorf("handler returned wrong status code: got %v want %v",
-			status, http.StatusBadRequest)
-	}
-
-	// Successful 'PUT /discovery' requests produce reports that need to be consumed or testing will hang.
-	// Spin up a goRoutine to consume the report.
-	// Create the HTTPHandler's internal channel
-	imchan = make(chan HTTPReport)
-	done := make(chan bool)
-	go func() {
-		httpReportIn = <-imchan
-		done <- true
-	}()
-
-	// Store test data
-	testAddrs := storage.SystemAddresses{
-		Addresses: []storage.BMCAddress{
-			storage.BMCAddress{
-				MACAddress: "00beef151337",
-			},
-			storage.BMCAddress{
-				MACAddress: "00d00d15af00",
-			},
-		},
-	}
-	testData := storage.BMCCredItem{
-		Credentials: storage.BMCCredentials{
-			Username: "foo",
-			Password: "bar",
-		},
-		BMCAddrs: &testAddrs,
-	}
-	credStorage.AddMacCredentials("00beef151337", testData)
-	// Test correctly formatted request with MAC addresses
-	rr = GetHTTPResponse(t, doPutDiscovery, "PUT", "/v1/discovery", bytes.NewBuffer(json.RawMessage(`{"addresses":[{"macAddress":"00beef151337","IPAddresses":[]},{"macAddress":"00d00d15af00","IPAddresses":[]}]}`)), false, "", "")
-	// Check the status code is what we expect.
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("handler returned wrong status code: got %v(%s) want %v",
-			status, rr.Body, http.StatusOK)
-		// Allows the goRoutine to finish since there will not be a report.
-		imchan <- HTTPReport{}
-		// Wait for the thread to finish
-		<-done
-	} else {
-		expected := ""
-		if rr.Body.String() != expected {
-			t.Errorf("Unexpected response body: got %v, want %v", rr.Body.String(), expected)
-		}
-		// Wait for the thread to finish
-		<-done
-		expectedReportType := HTTPREPORT_CONFIG_COMPLETE
-		if httpReportIn.reportType != expectedReportType {
-			t.Errorf("Unexpected HTTPReport: got '%s', want '%s'", HTTPReportTypeString[httpReportIn.reportType], HTTPReportTypeString[expectedReportType])
-		}
 	}
 }
 
