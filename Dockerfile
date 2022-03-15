@@ -1,6 +1,6 @@
 # MIT License
 #
-# (C) Copyright [2018-2021] Hewlett Packard Enterprise Development LP
+# (C) Copyright [2018-2022] Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -24,7 +24,7 @@
 
 ### Build Base Stage ###
 
-FROM arti.dev.cray.com/baseos-docker-master-local/golang:1.16-alpine3.13 AS build-base
+FROM artifactory.algol60.net/docker.io/library/golang:1.16-alpine AS build-base
 
 RUN set -ex \
     && apk -U upgrade \
@@ -55,13 +55,13 @@ RUN set -ex \
 
 ### Final Stage ###
 
-FROM arti.dev.cray.com/baseos-docker-master-local/alpine:3.13
+FROM artifactory.algol60.net/docker.io/alpine:3.15
 LABEL maintainer="Hewlett Packard Enterprise"
 EXPOSE 8269 162/udp
 STOPSIGNAL SIGTERM
 
 # Setup environment variables.
-ENV HSM_URL=http://cray-smd/hsm/v1
+ENV HSM_URL=http://cray-smd/hsm/v2
 
 # Set the default for this Docker image to be to use local storage...just makes it easier for local development.
 ENV DATASTORE_URL="mem:"
@@ -85,9 +85,12 @@ RUN set -ex \
 COPY --from=builder /go/reds /usr/local/bin
 COPY --from=builder /go/vault_loader /usr/local/bin
 
+COPY configs configs
+
+
 # nobody 65534:65534
 USER 65534:65534
 
 # Set up the command to start the service, the run the init script.
 #CMD snmptrapd -f -Lo -c /etc/snmp/snmptrapd.conf -F '%B %#v\n' -OnQt | reds $REDS_OPTS $( [ -n "$HSM_URL" ] && echo --hsm=$HSM_URL ) --datastore=$DATASTORE_URL
-CMD reds $REDS_OPTS $( [ -n "$HSM_URL" ] && echo --hsm=$HSM_URL ) --datastore=$DATASTORE_URL
+CMD reds $REDS_OPTS $( [ -n "$HSM_URL" ] && echo --hsm=$HSM_URL ) --sls=$SLS_ADDR --datastore=$DATASTORE_URL

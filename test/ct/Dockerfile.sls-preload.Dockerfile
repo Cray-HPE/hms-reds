@@ -1,9 +1,6 @@
-#!/usr/bin/env bash
-
-#
 # MIT License
 #
-# (C) Copyright [2021-2022] Hewlett Packard Enterprise Development LP
+# Copyright 2022 Hewlett Packard Enterprise Development LP
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -17,45 +14,20 @@
 #
 # THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 # IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
 # THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
 # OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 # ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 # OTHER DEALINGS IN THE SOFTWARE.
-#
-set -x
 
+FROM artifactory.algol60.net/docker.io/curlimages/curl
 
-# Configure docker compose
-export COMPOSE_PROJECT_NAME=$RANDOM
-export COMPOSE_FILE=docker-compose.test.unit.yaml
+COPY smoke /src/app
+ENV PATH="/src/app:${PATH}"
 
-echo "COMPOSE_PROJECT_NAME: ${COMPOSE_PROJECT_NAME}"
-echo "COMPOSE_FILE: $COMPOSE_FILE"
+USER root
+RUN chown  -R 65534:65534 /src
+USER 65534:65534
 
-
-function cleanup() {
-  docker-compose down
-  if ! [[ $? -eq 0 ]]; then
-    echo "Failed to decompose environment!"
-    exit 1
-  fi
-  exit $1
-}
-
-
-echo "Starting containers..."
-docker-compose build
-docker-compose up --exit-code-from unit-tests unit-tests
-
-test_result=$?
-
-# Clean up
-echo "Cleaning up containers..."
-if [[ $test_result -ne 0 ]]; then
-  echo "Unit tests FAILED!"
-  cleanup 1
-fi
-
-echo "Unit tests PASSED!"
-cleanup 0
+# this is inherited from the hms-test container
+CMD [ "/bin/sh", "-c", "sleep 5 && curl http://cray-sls:8376/v1/hardware -d @/src/app/sls_payload.json" ]

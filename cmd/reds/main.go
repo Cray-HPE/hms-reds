@@ -422,7 +422,7 @@ func main() {
 
 	// First thing's first: Parse input options.
 	flag.StringVar(&httpListen, "http-listen", ":8269", "HTTP server IP/port bind target")
-	flag.StringVar(&hsm, "hsm", "http://cray-smd/hsm/v1", "Hardware State Manager location as URI, e.g. [scheme]://[host[:port]][/path]")
+	flag.StringVar(&hsm, "hsm", "http://cray-smd/hsm/v2", "Hardware State Manager location as URI, e.g. [scheme]://[host[:port]][/path]")
 	flag.StringVar(&bss, "bss", "http://cray-bss/boot/v1", "Boot Script service location as URI, e.g. [scheme]://[host[:port]][/path]")
 	flag.StringVar(&sls, "sls", "cray-sls/v1", "System Layout Service location as [host[:port]][/path]")
 	flag.StringVar(&datastore_base, "datastore", "http://cray-reds-etcd-client:2379", "Datastore Service location as URI")

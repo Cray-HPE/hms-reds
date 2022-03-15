@@ -1,0 +1,11 @@
+{
+  "Parent": "x3000c0r24",
+  "Xname": "x3000c0r24b0",
+  "Type": "comptype_rtr_bmc",
+  "Class": "River",
+  "TypeString": "RouterBMC",
+  "ExtraProperties": {
+    "Password": "vault://hms-creds/x3000c0r24b0",
+    "Username": "vault://hms-creds/x3000c0r24b0"
+  }
+}
