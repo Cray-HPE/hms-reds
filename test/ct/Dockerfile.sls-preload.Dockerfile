@@ -26,7 +26,7 @@ COPY smoke /src/app
 ENV PATH="/src/app:${PATH}"
 
 USER root
-RUN chown  -R 65534:65534 /src
+RUN chown -R 65534:65534 /src
 USER 65534:65534
 
 # this is inherited from the hms-test container
