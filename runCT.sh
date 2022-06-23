@@ -36,7 +36,7 @@ echo "COMPOSE_FILE: $COMPOSE_FILE"
 
 function cleanup() {
   docker-compose down
-  if ! [[ $? -eq 0 ]]; then
+  if [[ $? -ne 0 ]]; then
     echo "Failed to decompose environment!"
     exit 1
   fi
@@ -47,7 +47,7 @@ function cleanup() {
 # Get the base containers running
 echo "Starting containers..."
 docker-compose build --no-cache
-docker-compose up  -d cray-reds #this will stand up everything except for the integration test container
+docker-compose up -d cray-reds
 sleep 10 #reds might need some time to come up...
 docker-compose up --exit-code-from ct-tests-smoke ct-tests-smoke
 test_result=$?
