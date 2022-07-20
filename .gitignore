@@ -3,3 +3,11 @@
 cmd/reds_loader/reds_mapping.json
 kubernetes/cray-hms-reds/helm
 .idea/
+
+# Prevent certificates from getting checked in
+*.ca
+*.cer
+*.crt
+*.csr
+*.key
+*.pem
