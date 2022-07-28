@@ -22,7 +22,7 @@ Once an xname is assigned, all required information has been gathered and the en
 
 ## Configuration
 
-REDS takes no direct configuration, except for the location of the mapping file.  The location of the mapping file may be altered bby changing the value of `cray_reds_mapping_file`.
+REDS takes no direct configuration, except for the location of the mapping file.  The location of the mapping file may be altered by changing the value of `cray_reds_mapping_file`.
 
 The mapping file itself should be built using the [ccd-reader utility](https://stash.us.cray.com/projects/HMS/repos/hms-ccd-reader/browse).  If somehow you end up having to hand-build a configuration file, it looks like this, excluding `// comments`:
 
@@ -55,9 +55,10 @@ The mapping file itself should be built using the [ccd-reader utility](https://s
 
 ## REDS CT Testing
 
-This repository builds and publishes hms-reds-ct-test RPMs along with the service itself containing tests that verify REDS on the
-NCNs of live Shasta systems. The tests require the hms-ct-test-base RPM to also be installed on the NCNs in order to execute.
-The version of the test RPM installed on the NCNs should always match the version of REDS deployed on the system.
+In addition to the service itself, this repository builds and publishes cray-reds-test images containing tests that
+verify REDS on live Shasta systems. The tests are invoked via helm test as part of the Continuous Test (CT) framework
+during CSM installs and upgrades. The version of the cray-reds-test image (vX.Y.Z) should match the version of the
+cray-reds image being tested, both of which are specified in the helm chart for the service.
 
 ## More Information
 
@@ -65,4 +66,5 @@ The version of the test RPM installed on the NCNs should always match the versio
 * [REDS/MEDS/IDEALS interaction](https://connect.us.cray.com/confluence/pages/viewpage.action?pageId=136352226)
 
 ## Future Work
+
 TBD.
