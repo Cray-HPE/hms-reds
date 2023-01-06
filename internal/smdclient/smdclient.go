@@ -71,9 +71,6 @@ var hsm string
 // The HSM Credentials store
 var hcs *compcreds.CompCredStore
 
-// The URL to use to talk to BSS
-var bss string
-
 // The instance name of this running service instance
 var serviceName string
 
@@ -98,7 +95,7 @@ func (n HSMNotification) String() string {
 }
 
 // Init initializes constants and state for this module.
-func Init(restRetry int, restTimeout int, hsmURL string, bssURL string, svcName string) error {
+func Init(restRetry int, restTimeout int, hsmURL string, svcName string) error {
 	serviceName = svcName
 	// Setup connection to HSM Vault
 	log.Printf("Connecting to HSM secure store (Vault)...")
@@ -114,11 +111,9 @@ func Init(restRetry int, restTimeout int, hsmURL string, bssURL string, svcName 
 		SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true}).
 		SetTimeout(time.Duration(time.Duration(restTimeout) * time.Second)).
 		SetRetryCount(restRetry). // This uses a default backoff algorithm
-		SetRESTMode() // This enables automatic unmarshalling to JSON and no redirects
+		SetRESTMode()             // This enables automatic unmarshalling to JSON and no redirects
 
 	hsm = hsmURL
-
-	bss = bssURL
 
 	return nil
 }
@@ -165,35 +160,6 @@ func NotifyHSMDiscoveredWithGeolocation(payload HSMNotification) bool {
 	// TODO put error logic in switch stmt
 }
 
-// NotifyHSMRemoved is a goroutine for asynchronously sending a deleted node notification to HSM
-func NotifyHSMRemoved(node string) {
-	SetHSMXnameEnabled(node, false)
-
-	go notifyBSSResync()
-}
-
-// notifyBSSResync is a goroutine for asynchronously sending a notification to
-//    HSM for clearing local state
-func notifyBSSResync() {
-	// Notify HSM and clear local state
-	log.Printf("DEBUG: POST to %s", bss+"/hosts")
-
-	resp, err := rClient.
-		R().
-		SetHeader(base.USERAGENT, serviceName).
-		Post(bss + "/hosts")
-	if err != nil {
-		log.Printf("WARNING: Unable to request BSS resync: %v", err)
-	}
-
-	if resp.StatusCode() != http.StatusNoContent {
-		log.Printf("WARNING: An error occurred forcing BSS resync: %s %v",
-			resp.Status(), resp)
-	}
-	// TODO put error logic in switch stmt
-	log.Printf("INFO: Successfully forced BSS resync")
-}
-
 func SetHSMXnameEnabled(xname string, enabled bool) (bool, error) {
 	payload := HSMNotification{
 		ID:      xname,
@@ -224,50 +190,6 @@ func SetHSMXnameEnabled(xname string, enabled bool) (bool, error) {
 		return false, rerr
 	}
 	return true, nil
-}
-
-/*
-Returns if the named node is listed as present in HSM or not
-*/
-func QueryHSMState(xname string) (bool, error) {
-	log.Printf("DEBUG: GET from %s/Inventory/RedfishEndpoints/%s", hsm, xname)
-
-	resp, err := rClient.R().
-		SetHeader(base.USERAGENT, serviceName).
-		Get(hsm + "/Inventory/RedfishEndpoints/" + xname)
-	if err != nil {
-		log.Printf("WARNING: Unable to get information for %s: %v", xname, err)
-		return false, err
-	}
-
-	bodyBytes := resp.Body()
-
-	if resp.StatusCode() == http.StatusOK {
-		hmsn := new(HSMNotification)
-		err := json.Unmarshal(bodyBytes, hmsn)
-		if err != nil {
-			log.Printf("WARNING: Unable to unmarshal data on %s: %v", xname, err)
-			return false, err
-		}
-		if hmsn.Enabled != nil && *(hmsn.Enabled) != true {
-			// Requested xname is present in HSM, but not enabled
-			log.Printf("DEBUG: %s is not present in HSM", xname)
-			return false, nil
-		} else {
-			// Requested xname is present and enabled OR the enabled flag is not present
-			log.Printf("DEBUG: %s is present in HSM", xname)
-			return true, nil
-		}
-	} else if resp.StatusCode() == http.StatusNotFound {
-		log.Printf("DEBUG: %s is not present in HSM", xname)
-		return false, nil
-	}
-
-	// else ...
-	strbody := string(resp.Body())
-	log.Printf("WARNING: Error occurred looking up %s in HSM (code %d):\n%s", xname, resp.StatusCode(), string(strbody))
-	rerr := errors.New("Unable to retrieve status from HSM: " + string(resp.StatusCode()) + "\n" + strbody)
-	return false, rerr
 }
 
 // HSMCreateComponent performs the task of adding a discovered component
@@ -307,8 +229,4 @@ func HSMCreateComponent(payload HSMCompNotification) bool {
 		log.Printf("WARNING: Errors occured and %s was not added to HSM.", payload.Components[0].ID)
 		return false
 	}
-}
-
-func foo() {
-
 }

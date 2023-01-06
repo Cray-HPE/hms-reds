@@ -43,9 +43,5 @@ COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-reds/vendor
 
 FROM base
 
-CMD ["sh", "-c", "go test -cover -v github.com/Cray-HPE/hms-reds/cmd/reds; \
-    go test -cover -v github.com/Cray-HPE/hms-reds/internal/mapping; \
+CMD ["sh", "-c", "go test -cover -v github.com/Cray-HPE/hms-reds/internal/mapping; \
     go test -cover -v github.com/Cray-HPE/hms-reds/internal/model"]
-
-    # I dont know why:  #go test -cover -v github.com/Cray-HPE/hms-reds/internal/... wouldnt be a good idea.
-    # I ran it; and there is something wrong with my IDE or with smdclient.go

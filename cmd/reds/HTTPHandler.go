@@ -26,17 +26,11 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/Cray-HPE/hms-reds/internal/columbia"
 	"github.com/gorilla/mux"
 )
 
 func respond_204(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusNoContent)
-}
-
-func respond_503(w http.ResponseWriter, msg string) {
-	http.Error(w, "Service Unavailable", http.StatusServiceUnavailable)
-	w.Write([]byte(msg + "\n"))
 }
 
 func Versions(w http.ResponseWriter, r *http.Request) {
@@ -47,15 +41,7 @@ func Versions(w http.ResponseWriter, r *http.Request) {
  * Validates that reds dependencies are available.
  */
 func doReadinessCheck(w http.ResponseWriter, r *http.Request) {
-	// check sls
-	if !columbia.ColumbiaListRead() {
-		msg := "columbia switches not read from SLS for REDS"
-		respond_503(w, msg)
-		return
-	}
-
-	respond_204(w)
-	return
+	doLivenessCheck(w, r)
 }
 
 /*
