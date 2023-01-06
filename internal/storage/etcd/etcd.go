@@ -25,7 +25,6 @@ package etcd
 import (
 	"encoding/json"
 	"errors"
-	"log"
 	"path"
 	"strings"
 
@@ -153,28 +152,4 @@ func (state *Etcd) SetMacState(mac string, macState storage.MacState) error {
 
 func (state *Etcd) ClearMacState(mac string) error {
 	return state.store.Delete(state.makeMacKey(mac))
-}
-
-func (state *Etcd) CheckLiveness() bool {
-	key := state.fixKey(keyLiveness)
-	value := valueLiveness
-	err := state.store.Store(key, value)
-	if err != nil {
-		log.Printf("WARNING: Unable to store key in etcd: %v", err)
-		return false
-	}
-
-	rval, present, err := state.store.Get(key)
-	if err != nil || present == false || rval != value {
-		log.Printf("WARNING: Unable to retrieve key from etcd: %v", err)
-		return false
-	}
-
-	err = state.store.Delete(key)
-	if err != nil {
-		log.Printf("WARNING: Unable to delete key in etcd: %v", err)
-		return false
-	}
-
-	return true
 }

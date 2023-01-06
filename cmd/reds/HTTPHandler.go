@@ -27,36 +27,8 @@ import (
 	"net/http"
 
 	"github.com/Cray-HPE/hms-reds/internal/columbia"
-	"github.com/Cray-HPE/hms-reds/internal/model"
-	"github.com/Cray-HPE/hms-reds/internal/storage"
-	sstorage "github.com/Cray-HPE/hms-securestorage"
 	"github.com/gorilla/mux"
 )
-
-// Channel for sending notifications
-var imchan chan HTTPReport
-var globalStorage storage.Storage
-
-var credStorage *model.RedsCredStore
-
-/*
-* Logs a call to an HTTP endpoint.  args are any notable argumetns we want to log here
- */
-func log_call(r *http.Request, args ...string) {
-	log.Printf("HTTP: %s called, args %s", r.URL.RequestURI(), args)
-}
-
-func simpleMw(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Do stuff here
-		if r.URL.Path != "/v1/liveness" &&
-			r.URL.Path != "/v1/readiness" {
-			log.Printf("HTTP: %s called", r.RequestURI)
-		}
-		// Call the next handler, which can be another middleware in the chain, or the final handler.
-		next.ServeHTTP(w, r)
-	})
-}
 
 func respond_204(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusNoContent)
@@ -68,7 +40,6 @@ func respond_503(w http.ResponseWriter, msg string) {
 }
 
 func Versions(w http.ResponseWriter, r *http.Request) {
-	log_call(r)
 	w.Write([]byte("/v1\n"))
 }
 
@@ -76,33 +47,15 @@ func Versions(w http.ResponseWriter, r *http.Request) {
  * Validates that reds dependencies are available.
  */
 func doReadinessCheck(w http.ResponseWriter, r *http.Request) {
-	// error response string
-	var msg = ""
-	var hasProblem = false
-
-	// check etcd
-	if !globalStorage.CheckLiveness() {
-		msg = "etcd for REDS is not ready"
-		hasProblem = true
-	}
-
 	// check sls
 	if !columbia.ColumbiaListRead() {
-		cMsg := "columbia switches not read from SLS for REDS"
-		if hasProblem {
-			msg = msg + " : " + cMsg
-		} else {
-			msg = cMsg
-			hasProblem = true
-		}
+		msg := "columbia switches not read from SLS for REDS"
+		respond_503(w, msg)
+		return
 	}
 
-	// parse the results
-	if hasProblem {
-		respond_503(w, msg)
-	} else {
-		respond_204(w)
-	}
+	respond_204(w)
+	return
 }
 
 /*
@@ -112,43 +65,15 @@ func doLivenessCheck(w http.ResponseWriter, r *http.Request) {
 	respond_204(w)
 }
 
-func GetRouterV1(r *mux.Router) {
-	// Define soubrouter for /v1/
-
-	s := r.PathPrefix("/v1").Subrouter()
-
-	s.HandleFunc("/readiness", doReadinessCheck).Methods("GET")
-	s.HandleFunc("/liveness", doLivenessCheck).Methods("GET")
-
-	// TODO: this setup gives blank responses for things that are the wrong method
-	// (eg: GET to /v1/credentials).  Fix that so some response is given
-}
-
-func GetRouter() *mux.Router {
+func run_HTTPsrv() {
 	router := mux.NewRouter()
-	router.Use(simpleMw)
 
 	router.HandleFunc("/", Versions)
-	GetRouterV1(router)
 
-	return (router)
-}
+	subrouter := router.PathPrefix("/v1").Subrouter()
 
-func run_HTTPsrv(ichan chan HTTPReport, istorage storage.Storage) {
-	router := GetRouter()
-
-	imchan = ichan
-	globalStorage = istorage
-
-	log.Printf("Connecting to secure store (Vault)...")
-	// Start a connection to Vault
-	if ss, err := sstorage.NewVaultAdapter("secret"); err != nil {
-		log.Printf("Error: Secure Store connection failed - %s", err)
-		panic(err)
-	} else {
-		log.Printf("Connection to secure store (Vault) succeeded")
-		credStorage = model.NewRedsCredStore("reds-creds", ss)
-	}
+	subrouter.HandleFunc("/readiness", doReadinessCheck).Methods("GET")
+	subrouter.HandleFunc("/liveness", doLivenessCheck).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(httpListen, router))
 }

@@ -25,10 +25,9 @@ package storage
 import "fmt"
 
 // The base object to be stored.  This object represents the merged
-// state from both the HTTP and SNMP modules.
+// state from both the HTTP modules.
 type MacState struct {
 	DiscoveredHTTP bool   // Whether the HTTP module has reported this mac
-	DiscoveredSNMP bool   // Whether the SNMP module has reported this mac
 	SwitchName     string // The switch this mac is connected to. Set by SNMP
 	SwitchPort     string // The port this mac is connected to. Set by SNMP
 	Username       string // The BMC username set. Set by HTTP
@@ -39,9 +38,8 @@ type MacState struct {
 // String() used to suppress Username/Password in log output
 //   and tag the data for clarity.
 func (state MacState) String() string {
-	return fmt.Sprintf("MacState - HTTP:%t, SNMP:%t. Switch:%s[%s] IP:%s",
+	return fmt.Sprintf("MacState - HTTP:%t, Switch:%s[%s] IP:%s",
 		state.DiscoveredHTTP,
-		state.DiscoveredSNMP,
 		state.SwitchName,
 		state.SwitchPort,
 		state.IPAddress)
@@ -123,9 +121,4 @@ type Storage interface {
 	// Returns:
 	// - error: any error that occurred (or nil)
 	ClearMacState(mac string) error
-
-	// Checks the liveness of our conenction to storage
-	// Returns:
-	// - bool: true if the connection is live, false otherwise
-	CheckLiveness() bool
 }

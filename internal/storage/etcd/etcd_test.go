@@ -120,7 +120,6 @@ func TestGetMacState_exists(t *testing.T) {
 
 	inobj := new(storage.MacState)
 	inobj.DiscoveredHTTP = false
-	inobj.DiscoveredSNMP = false
 	inobj.SwitchName = "SomeName"
 	inobj.SwitchPort = "fortyGigabit 3/12"
 	inobj.Username = "GdlqGFKE"
@@ -146,7 +145,6 @@ func TestSetMacState(t *testing.T) {
 
 	inobj := new(storage.MacState)
 	inobj.DiscoveredHTTP = false
-	inobj.DiscoveredSNMP = false
 	inobj.SwitchName = "SomeName"
 	inobj.SwitchPort = "fortyGigabit 3/12"
 	inobj.Username = "GdlqGFKE"
@@ -174,7 +172,6 @@ func TestClearMacState(t *testing.T) {
 
 	inobj := new(storage.MacState)
 	inobj.DiscoveredHTTP = false
-	inobj.DiscoveredSNMP = false
 	inobj.SwitchName = "SomeName"
 	inobj.SwitchPort = "fortyGigabit 3/12"
 	inobj.Username = "GdlqGFKE"
@@ -197,14 +194,6 @@ func TestClearMacState(t *testing.T) {
 	if outobj != nil {
 		mysteryObj, _ := json.Marshal(outobj)
 		t.Errorf("Unexpectedly got back an object!?: %s", string(mysteryObj))
-	}
-}
-
-func TestEtcdLiveness(t *testing.T) {
-	etcdi := new(Etcd)
-	etcdi.Init("mem:", false)
-	if etcdi.CheckLiveness() != true {
-		t.Errorf("Etcd is not alive?!")
 	}
 }
 
@@ -249,48 +238,6 @@ func (state KVIMock) Delete(key string) error {
 	return nil
 }
 
-func TestEtcdLiveness_noStore(t *testing.T) {
-	etcdi := new(Etcd)
-	mockStore := new(KVIMock)
-	mockStore.failStore = true
-	etcdi.Init("mem:", false)
-	etcdi.store = *mockStore
-	if etcdi.CheckLiveness() == true {
-		t.Errorf("Etcd is not dead?!")
-	}
-}
-
-func TestEtcdLiveness_noGet(t *testing.T) {
-	etcdi := new(Etcd)
-	mockStore := new(KVIMock)
-	mockStore.failGet = true
-	etcdi.Init("mem:", false)
-	etcdi.store = *mockStore
-	// Sequential calls to Get() in the Etcd mock shoudl result in
-	// different conditions failing, hence the first 3 calls.
-	// The fourth shoudl succeed.
-	mockStore.getCallNumber = 1
-	etcdi.store = *mockStore
-	if etcdi.CheckLiveness() == true {
-		t.Errorf("Etcd is not dead?! (test 1)")
-	}
-	mockStore.getCallNumber = 2
-	etcdi.store = *mockStore
-	if etcdi.CheckLiveness() == true {
-		t.Errorf("Etcd is not dead?! (test 2)")
-	}
-	mockStore.getCallNumber = 3
-	etcdi.store = *mockStore
-	if etcdi.CheckLiveness() == true {
-		t.Errorf("Etcd is not dead?! (test 3)")
-	}
-	mockStore.getCallNumber = 4
-	etcdi.store = *mockStore
-	if etcdi.CheckLiveness() == false {
-		t.Errorf("Etcd is dead?! (test 4)")
-	}
-}
-
 /*
 Test what happens when we can't delete things
 */
@@ -300,9 +247,7 @@ func TestEtcdLiveness_noDelete(t *testing.T) {
 	mockStore.failDelete = true
 	etcdi.Init("mem:", false)
 	etcdi.store = *mockStore
-	if etcdi.CheckLiveness() == true {
-		t.Errorf("Etcd is not dead?!")
-	}
+
 }
 
 /*

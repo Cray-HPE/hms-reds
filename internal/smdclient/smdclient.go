@@ -33,7 +33,6 @@ import (
 
 	base "github.com/Cray-HPE/hms-base"
 	compcreds "github.com/Cray-HPE/hms-compcredentials"
-	"github.com/Cray-HPE/hms-reds/internal/storage"
 	sstorage "github.com/Cray-HPE/hms-securestorage"
 	"gopkg.in/resty.v1"
 )
@@ -115,51 +114,13 @@ func Init(restRetry int, restTimeout int, hsmURL string, bssURL string, svcName 
 		SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true}).
 		SetTimeout(time.Duration(time.Duration(restTimeout) * time.Second)).
 		SetRetryCount(restRetry). // This uses a default backoff algorithm
-		SetRESTMode()             // This enables automatic unmarshalling to JSON and no redirects
+		SetRESTMode() // This enables automatic unmarshalling to JSON and no redirects
 
 	hsm = hsmURL
 
 	bss = bssURL
 
 	return nil
-}
-
-// NotifyHSMDiscovered is a goroutine for asynchronously sending a discovered node notification to HSM
-func NotifyHSMDiscovered(mac string, xname *string, node storage.MacState) {
-	// Notify HSM and clear local state
-
-	// Send credentials to Vault instead of HSM
-	if len(node.Username) > 0 {
-		cred := compcreds.CompCredentials{
-			Xname:    *xname,
-			URL:      "",
-			Username: node.Username,
-			Password: node.Password,
-		}
-		err := hcs.StoreCompCred(cred)
-		if err != nil {
-			// If we fail to store credentials in vault, we'll lose the
-			// credentials and the component endpoints associated with
-			// them will still be successfully in the database.
-			log.Printf("Failed to store credentials for %s in Vault - %s", *xname, err)
-		}
-	}
-
-	// No longer include User and Password (set to blank) to signal HSM to pull from Vault
-	payload := HSMNotification{
-		ID:                 *xname,
-		FQDN:               *xname,
-		IPAddress:          node.IPAddress,
-		User:               "", // blank to pull from Vault
-		Password:           "", // blank to pull from Vault
-		MACAddr:            mac,
-		RediscoverOnUpdate: true,
-	}
-
-	log.Printf("INFO: We discovered %s on %s port %s:\n\t",
-		*xname, node.SwitchName, node.SwitchPort)
-
-	NotifyHSMDiscoveredWithGeolocation(payload)
 }
 
 // NotifyHSMDiscoveredWithGeolocation performs the task of adding discovered items
@@ -346,4 +307,8 @@ func HSMCreateComponent(payload HSMCompNotification) bool {
 		log.Printf("WARNING: Errors occured and %s was not added to HSM.", payload.Components[0].ID)
 		return false
 	}
+}
+
+func foo() {
+
 }

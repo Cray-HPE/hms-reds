@@ -28,7 +28,6 @@ func TestMacState_String(t *testing.T) {
 
 	testData := MacState{
 		DiscoveredHTTP: true,
-		DiscoveredSNMP: false,
 		SwitchName:     "SomeName",
 		SwitchPort:     "fortyGigabit 3/12",
 		Username:       "groot",
@@ -42,7 +41,7 @@ func TestMacState_String(t *testing.T) {
 	}{{
 		name:  "BasicToString",
 		state: testData,
-		want:  "MacState - HTTP:true, SNMP:false. Switch:SomeName[fortyGigabit 3/12] IP:10.11.12.13",
+		want:  "MacState - HTTP:true, Switch:SomeName[fortyGigabit 3/12] IP:10.11.12.13",
 	}}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

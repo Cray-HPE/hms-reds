@@ -23,8 +23,6 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -84,9 +82,6 @@ func TestVersions(t *testing.T) {
 }
 
 func TestDoReadinessCheck(t *testing.T) {
-	// Service Unavailable
-	store, err := storage_factory.MakeStorage("etcd", "mem:", false)
-	globalStorage = store
 
 	rr := GetHTTPResponse(t, doReadinessCheck, "GET", "/v1/readiness", nil, false, "", "")
 	// Check the status code is what we expect.
@@ -101,9 +96,7 @@ func TestDoReadinessCheck(t *testing.T) {
 		t.Errorf("Unable to connect to storage: %s", err)
 	}
 	ss, _ := sstorage.NewMockAdapter()
-	if !mainstorage.CheckLiveness() {
-		t.Errorf("ERROR: Unable to write port mapping file! Error was: %v", err)
-	}
+
 	// Set up storage to load the mapping
 	mapping.SetStorage(mainstorage, ss)
 	rr = GetHTTPResponse(t, doReadinessCheck, "GET", "/v1/readiness", nil, false, "", "")
@@ -129,33 +122,5 @@ func TestDoLivenessCheck(t *testing.T) {
 	if status := rr.Code; status != http.StatusNoContent {
 		t.Errorf("handler returned wrong status code: got %v want %v",
 			status, http.StatusNoContent)
-	}
-}
-
-func Test405(t *testing.T) {
-	router := GetRouter()
-
-	var cases = []badReq{{"http://localhost:8080/v1/credentials", "GET"},
-		{"http://localhost:8080/v1/credentials", "PUT"},
-		{"http://localhost:8080/v1/credentials", "DELETE"},
-		{"http://localhost:8080/v1/discovery", "GET"},
-		{"http://localhost:8080/v1/discovery", "POST"},
-		{"http://localhost:8080/v1/discovery", "DELETE"},
-	}
-
-	// /credentials GET, PUT, DELETE
-
-	for _, test := range cases {
-		//req,rerr := http.NewRequest("GET","http://localhost:8080/v1/credentials",nil)
-		req, rerr := http.NewRequest(test.method, test.url, bytes.NewBuffer(json.RawMessage(`{}`)))
-		if rerr != nil {
-			t.Error("ERROR forming request:", rerr)
-		}
-		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, req)
-		if rec.Code != http.StatusMethodNotAllowed {
-			t.Errorf("ERROR, disallowed %s operation bad return, wanted %d got %d",
-				test.method, http.StatusMethodNotAllowed, rec.Code)
-		}
 	}
 }
