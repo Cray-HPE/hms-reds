@@ -41,7 +41,6 @@ import (
 
 	base "github.com/Cray-HPE/hms-base"
 	compcredentials "github.com/Cray-HPE/hms-compcredentials"
-	"github.com/Cray-HPE/hms-reds/internal/storage"
 
 	sstorage "github.com/Cray-HPE/hms-securestorage"
 )
@@ -73,9 +72,6 @@ var lock sync.Mutex
 // A slice of functions to call whenever a new mapping is uploaded
 var cbFuncs []CallbackFunc
 var cbLock sync.Mutex
-
-// Access to permanent storage
-var modStorage storage.Storage = nil
 
 // Service/instance name
 var serviceName string
@@ -248,7 +244,7 @@ func WatchSLSNewSwitches(quitChan chan bool) {
 
 // Sets the conenction to the permenent storage.  Call once before anything
 // else.  Will automatically try to reload the mapping.
-func SetStorage(mstorage storage.Storage, ss sstorage.SecureStorage) {
+func SetStorage(ss sstorage.SecureStorage) {
 
 	if ss == nil {
 		for {

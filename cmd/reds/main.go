@@ -53,8 +53,6 @@ import (
 	"github.com/Cray-HPE/hms-reds/internal/columbia"
 	"github.com/Cray-HPE/hms-reds/internal/mapping"
 	"github.com/Cray-HPE/hms-reds/internal/smdclient"
-	"github.com/Cray-HPE/hms-reds/internal/storage"
-	storage_factory "github.com/Cray-HPE/hms-reds/internal/storage/factory"
 )
 
 // Service/instance name
@@ -96,8 +94,6 @@ var insecure bool
 // Inter-module channel -- used to communicate between modules
 var scan_period int
 
-var mainstorage storage.Storage
-
 var debugLevel int = 0
 
 func init() {
@@ -138,7 +134,7 @@ func main() {
 	var enableSLSMapping bool
 	var enableColumbia bool
 	var defSSHKey string
-	var syslogTarg, ntpTarg string
+	var syslogTarg string
 	var redfishNPSuffix string
 	var err error
 
@@ -151,7 +147,6 @@ func main() {
 	flag.IntVar(&scan_period, "scan_period", 60, "How frequently each switch should be rescanned for new and removed hardware (seconds).")
 	flag.BoolVar(&insecure, "insecure", false, "If set, allow insecure connections to Hardware State Manager and Boot Script Service.")
 	flag.StringVar(&syslogTarg, "syslog", "", "Server:Port of the syslog aggregator to set on Columbia switches")
-	flag.StringVar(&ntpTarg, "ntp", "", "Server:Port of the NTP service to set on Columbia switches")
 	flag.StringVar(&redfishNPSuffix, "np-rf-url", "/redfish/v1/Managers/BMC/NetworkProtocol", "URL path for network options Redfish endpoint (Columbia switches only)")
 	flag.Parse()
 
@@ -168,19 +163,10 @@ func main() {
 	log.Printf("Configuration: smnet: %s", smnetURL)
 	log.Printf("Configuration: datastore URL: %s", datastore_base)
 	log.Printf("Configuration: Syslog target: %s", syslogTarg)
-	log.Printf("Configuration: NTP Target: %s", ntpTarg)
 	log.Printf("Configuration: SLS Mapping enabled: %t", enableSLSMapping)
 	log.Printf("Configuration: Columbia discovery enabled: %t", enableColumbia)
 	log.Printf("Configuration: Columbia config target: %s", redfishNPSuffix)
 	log.Print("Started reds")
-
-	log.Printf("DEBUG: Connecting to storage")
-	mainstorage, err = storage_factory.MakeStorage("etcd", datastore_base, insecure)
-	if err != nil {
-		log.Printf("FATAL: Can't connect to ETCD backing storage!")
-		panic(err)
-	}
-	log.Printf("DEBUG: Connected to storage")
 
 	//Init the secure TLS stuff
 
@@ -209,10 +195,10 @@ func main() {
 		nodeQuitChan <- true
 	}()
 
-	go columbia.StartColumbia(sls, hsm, syslogTarg, ntpTarg, defSSHKey, redfishNPSuffix, serviceName)
+	go columbia.StartColumbia(sls, hsm, syslogTarg, defSSHKey, redfishNPSuffix, serviceName)
 
 	// Load up the stored mapping file (if any) and send to SNMP
-	mapping.SetStorage(mainstorage, nil)
+	mapping.SetStorage(nil)
 
 	run_HTTPsrv()
 }

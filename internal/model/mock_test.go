@@ -1,3 +1,5 @@
+package model
+
 // MIT License
 //
 // (C) Copyright [2019, 2021] Hewlett Packard Enterprise Development LP
@@ -20,34 +22,33 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-package storage
+import (
+	"github.com/mitchellh/mapstructure"
+)
 
-import "testing"
+type KvMock struct {
+	storage map[string]interface{}
+}
 
-func TestMacState_String(t *testing.T) {
+func NewKvMock() *KvMock {
+	var s KvMock
+	s.storage = make(map[string]interface{})
+	return &s
+}
 
-	testData := MacState{
-		DiscoveredHTTP: true,
-		SwitchName:     "SomeName",
-		SwitchPort:     "fortyGigabit 3/12",
-		Username:       "groot",
-		Password:       "Terminal6",
-		IPAddress:      "10.11.12.13",
-	}
-	tests := []struct {
-		name  string
-		state MacState
-		want  string
-	}{{
-		name:  "BasicToString",
-		state: testData,
-		want:  "MacState - HTTP:true, Switch:SomeName[fortyGigabit 3/12] IP:10.11.12.13",
-	}}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.state.String(); got != tt.want {
-				t.Errorf("MacState.String() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+func (kv KvMock) Store(key string, value interface{}) error {
+	kv.storage[key] = value
+	return nil
+}
+func (kv KvMock) Lookup(key string, output interface{}) error {
+	value := kv.storage[key]
+	err := mapstructure.Decode(value, output)
+	return err
+}
+func (kv KvMock) Delete(key string) error {
+	delete(kv.storage, key)
+	return nil
+}
+func (kv KvMock) LookupKeys(keyPath string) (keys []string, err error) {
+	return
 }

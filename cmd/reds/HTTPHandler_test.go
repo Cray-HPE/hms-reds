@@ -30,7 +30,6 @@ import (
 
 	"github.com/Cray-HPE/hms-reds/internal/columbia"
 	"github.com/Cray-HPE/hms-reds/internal/mapping"
-	storage_factory "github.com/Cray-HPE/hms-reds/internal/storage/factory"
 	sstorage "github.com/Cray-HPE/hms-securestorage"
 )
 
@@ -91,14 +90,10 @@ func TestDoReadinessCheck(t *testing.T) {
 	}
 
 	// Service Ready
-	mainstorage, err := storage_factory.MakeStorage("etcd", "mem:", false)
-	if err != nil {
-		t.Errorf("Unable to connect to storage: %s", err)
-	}
 	ss, _ := sstorage.NewMockAdapter()
 
 	// Set up storage to load the mapping
-	mapping.SetStorage(mainstorage, ss)
+	mapping.SetStorage(ss)
 	rr = GetHTTPResponse(t, doReadinessCheck, "GET", "/v1/readiness", nil, false, "", "")
 	// Check the status code is what we expect.
 	if status := rr.Code; status != http.StatusServiceUnavailable {

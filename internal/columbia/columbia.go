@@ -29,7 +29,6 @@ import (
 	"log"
 	"os"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
@@ -147,21 +146,9 @@ func notifyXnamePresent(node GenericHardware, extras ComptypeRtrBmc, address str
 
 			// For each of these if we're provided the value we'll trust that's what we should use,
 			// but if not use the default value.
-			if cCred.Username == "" {
-				if extras.Username != "" && !strings.HasPrefix(extras.Username, VaultURLPrefix) {
-					cCred.Username = extras.Username
-				} else {
-					cCred.Username = defaultsCredentails["Cray"].Username
-				}
-			}
 
-			if cCred.Password == "" {
-				if extras.Password != "" && !strings.HasPrefix(extras.Password, VaultURLPrefix) {
-					cCred.Password = extras.Password
-				} else {
-					cCred.Password = defaultsCredentails["Cray"].Password
-				}
-			}
+			cCred.Username = defaultsCredentails["Cray"].Username
+			cCred.Password = defaultsCredentails["Cray"].Password
 
 			err = hcs.StoreCompCred(cCred)
 			if err != nil {
@@ -173,12 +160,9 @@ func notifyXnamePresent(node GenericHardware, extras ComptypeRtrBmc, address str
 	}
 
 	hsmError := notifyHSMXnamePresent(node, address)
-	// TODO: REDS doesn't really have the concept of per-node credentials.
-	// We need to do something so that Columbias can have per-item creds set
-	// including SSH keys.
-	globalCreds, err := credStorage.GetGlobalCredentials()
+	//CASMHMS-5131 Fixed here; use `BMC` credential, not the global ipmi
 	tmpBMCCreds := bmc_nwprotocol.CopyRFNetworkProtocol(&rfNWPStatic)
-	nstError := bmc_nwprotocol.SetXNameNWPInfo(tmpBMCCreds, address, globalCreds.Username, globalCreds.Password)
+	nstError := bmc_nwprotocol.SetXNameNWPInfo(tmpBMCCreds, address, cCred.Username, cCred.Password)
 
 	if (hsmError != nil) || (nstError != nil) {
 		finalError := fmt.Errorf("%v %v", hsmError, nstError)
@@ -429,7 +413,7 @@ func caCB(caBundle string) {
 }
 
 // StartColumbia - gathers list of Columbia switches and starts watching them for hardware
-func StartColumbia(slsUrl string, hsmUrl string, syslogTarg string, ntpTarg string, sshKey string, redfishNPSuffix string, svcName string) {
+func StartColumbia(slsUrl string, hsmUrl string, syslogTarg string, sshKey string, redfishNPSuffix string, svcName string) {
 	// NOTE: this sits and waits for sls to return a valid list of Columbia switches so
 	//  make sure to run this in a separate thread or be prepared to wait forever.
 	var err error
@@ -494,7 +478,7 @@ func StartColumbia(slsUrl string, hsmUrl string, syslogTarg string, ntpTarg stri
 
 	//Set up DNS/DHCP and NW protocol stuff
 
-	nwp := bmc_nwprotocol.NWPData{CAChainURI: caURI, NTPSpec: ntpTarg, SyslogSpec: syslogTarg,
+	nwp := bmc_nwprotocol.NWPData{CAChainURI: caURI, SyslogSpec: syslogTarg,
 		SSHKey: sshKey, SSHConsoleKey: sshKey}
 
 	rfNWPStatic, err = bmc_nwprotocol.Init(nwp, redfishNPSuffix)
