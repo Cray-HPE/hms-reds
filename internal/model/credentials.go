@@ -26,7 +26,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Cray-HPE/hms-reds/internal/storage"
 	sstorage "github.com/Cray-HPE/hms-securestorage"
 )
 
@@ -66,98 +65,6 @@ func NewRedsCredStore(keyPath string, ss sstorage.SecureStorage) *RedsCredStore 
 		SS:     ss,
 	}
 	return ccs
-}
-
-// Stores a BMCCredItem for the given mac address
-// Arguments:
-// - mac (string): The mac address to set the object for
-// - creds (BMCCredItem): The object to store
-// Returns:
-// - error: Any error that occurred or nil
-func (ccs *RedsCredStore) AddMacCredentials(mac string, creds storage.BMCCredItem) error {
-
-	err := ccs.SS.Store(ccs.CCPath+"/"+mac, creds)
-
-	if err != nil {
-		return errors.New("Unable to store BMCCredItem: " + err.Error())
-	}
-	return nil
-}
-
-// Retrieves a BMCCredItem for the given mac address
-// Arguments:
-// - mac (string): The mac address to retrieve the object for
-// Returns:
-// - BMCCredItem: the object corresponding to the mac address
-//   or nil if no object was found.
-// - error: Any error that occurred (or nil).  Note that "not found" is not
-//   considered an error
-func (ccs *RedsCredStore) FindMacCredentials(mac string) (redsCred storage.BMCCredItem, err error) {
-	err = ccs.SS.Lookup(ccs.CCPath+"/"+mac, &redsCred)
-	// if err != nil {
-	// 	if storage.KeyNotFound.MatchString(err.Error()) || storage.KeyNotFound2.MatchString(err.Error()) {
-	// 		// We just haven't seen this before, return nil
-	// 		return nil, nil
-	// 	}
-	// 	return nil, err
-	// }
-	return
-}
-
-// Clears stored credentials for a mac address
-// Arguments:
-// - mac (string): the mac address to clear stored credentials for
-// Returns:
-// - err (string): any error that occurred
-
-func (ccs *RedsCredStore) ClearMacCredentials(mac string) (err error) {
-	err = ccs.SS.Delete(ccs.CCPath + "/" + mac)
-	return
-}
-
-// Stores the global credentials
-// Arguments:
-// - creds (BMCCredentials): The credentials to store
-// Returns:
-// - error: Any error that occurred
-
-func (ccs *RedsCredStore) SetGlobalCredentials(creds storage.BMCCredentials) error {
-
-	err := ccs.SS.Store(ccs.CCPath+"/global/ipmi", creds)
-
-	if err != nil {
-		return errors.New("Unable to store global credentials: " + err.Error())
-	}
-	return nil
-}
-
-// Retrieves the global credentials
-// Arguments:
-// Returns:
-// - BMCCredentials: The object containing the global credentials
-//   or nil if no object was found.
-// - error: Any error that occurred (or nil). Note that "not found" is not
-//   considered an error
-func (ccs *RedsCredStore) GetGlobalCredentials() (redsCred storage.BMCCredentials, err error) {
-	err = ccs.SS.Lookup(ccs.CCPath+"/global/ipmi", &redsCred)
-	// if err != nil {
-	// 	if storage.KeyNotFound.MatchString(err.Error()) {
-	// 		// We just haven't seen this before, return nil
-	// 		return nil, nil
-	// 	}
-	// 	return nil, err
-	// }
-
-	return
-}
-
-// Clears the stored global credentials
-// Arguments:
-// Returns:
-// - error: Any error that occurred
-func (ccs *RedsCredStore) ClearGlobalCredentials() (err error) {
-	err = ccs.SS.Delete(ccs.CCPath + "/global/ipmi")
-	return
 }
 
 // GetDefaultCredentials retrieves a map of default credentials, keyed by vendor,

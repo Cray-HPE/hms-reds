@@ -4,25 +4,7 @@ networks:
   reds:
 
 services:
-#  ct-tests-functional-wait-for-smd:
-#    build:
-#      context: test/ct/
-#      dockerfile: Dockerfile.wait-for-smd.Dockerfile
-#    depends_on:
-#      - cray-reds
-#      - cray-smd
-#    networks:
-#      - reds
-#  ct-tests-functional:
-#    build:
-#      context: test/ct/
-#      dockerfile: Dockerfile
-#    depends_on:
-#      - cray-reds
-#      - cray-smd
-#    entrypoint: entrypoint.sh functional -c /src/app/tavern_global_config_ct_test.yaml -p /src/app
-#    networks:
-#      - reds
+
   ct-tests-smoke:
     build:
       context: test/ct/
@@ -30,14 +12,6 @@ services:
     depends_on:
       - cray-reds
     entrypoint: entrypoint.sh smoke -f smoke.json -u http://cray-reds:8269
-    networks:
-      - reds
-  etcd:
-    image: artifactory.algol60.net/quay.io/coreos/etcd:v3.4.7
-    environment:
-      - ALLOW_NONE_AUTHENTICATION=yes
-      - ETCD_ADVERTISE_CLIENT_URLS=http://etcd:2379
-      - ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379
     networks:
       - reds
   cray-reds:
@@ -54,27 +28,17 @@ services:
       - VAULT_KEYPATH=hms-creds
       - VAULT_SKIP_VERIFY=true
       - VAULT_ENABLED=true
-      - DATASTORE_URL=http://etcd:2379
       - SLS_ADDR=cray-sls:8376/v1
     networks:
       - reds
     depends_on:
-      - etcd
       - cray-smd
       - cray-sls-preload
       - cray-sls
       # - cray-hms-hmcollector
       # - redfish-simulator
       - vault-kv-enabler
-#  s3:
-#    image: artifactory.algol60.net/docker.io/library/nginx:1.18.0
-#    hostname: s3
-#    volumes:
-#      - ./Images:/usr/share/nginx/html
-##    ports:
-##      - "9000:80"
-#    networks:
-#      - reds
+
   vault:
     hostname: vault
     image: artifactory.algol60.net/docker.io/library/vault:1.5.5

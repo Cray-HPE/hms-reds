@@ -1,3 +1,5 @@
+package model
+
 // MIT License
 //
 // (C) Copyright [2019, 2021] Hewlett Packard Enterprise Development LP
@@ -20,29 +22,33 @@
 // ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 // OTHER DEALINGS IN THE SOFTWARE.
 
-package snmp
-
 import (
-	"log"
-	"os"
-
-	"github.com/Cray-HPE/hms-reds/internal/snmp/common"
-	"github.com/Cray-HPE/hms-reds/internal/snmp/dell"
-	"github.com/Cray-HPE/hms-reds/internal/storage"
+	"github.com/mitchellh/mapstructure"
 )
 
-func GetSwitch(name string, storage *storage.Storage) (common.Implementation, error) {
-	ret := new(dell.DellONSwitchInfo)
+type KvMock struct {
+	storage map[string]interface{}
+}
 
-	err := ret.Init(name, storage)
-	if err != nil {
-		byPassSwitchBlacklistPanic := os.Getenv("REDS_BYPASS_SWITCH_BLACKLIST_PANIC")
-		if byPassSwitchBlacklistPanic != "" {
-			log.Printf("WARNING: Failed to initialize switch %s, but proceeding after error: %s", name, err)
-		} else {
-			log.Printf("ERROR: Failed to initialize switch %s, calling panic with error: %s", name, err)
-			panic(err)
-		}
-	}
-	return ret, err
+func NewKvMock() *KvMock {
+	var s KvMock
+	s.storage = make(map[string]interface{})
+	return &s
+}
+
+func (kv KvMock) Store(key string, value interface{}) error {
+	kv.storage[key] = value
+	return nil
+}
+func (kv KvMock) Lookup(key string, output interface{}) error {
+	value := kv.storage[key]
+	err := mapstructure.Decode(value, output)
+	return err
+}
+func (kv KvMock) Delete(key string) error {
+	delete(kv.storage, key)
+	return nil
+}
+func (kv KvMock) LookupKeys(keyPath string) (keys []string, err error) {
+	return
 }

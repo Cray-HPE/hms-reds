@@ -33,7 +33,6 @@ import (
 
 	base "github.com/Cray-HPE/hms-base"
 	compcreds "github.com/Cray-HPE/hms-compcredentials"
-	"github.com/Cray-HPE/hms-reds/internal/storage"
 	sstorage "github.com/Cray-HPE/hms-securestorage"
 	"gopkg.in/resty.v1"
 )
@@ -72,9 +71,6 @@ var hsm string
 // The HSM Credentials store
 var hcs *compcreds.CompCredStore
 
-// The URL to use to talk to BSS
-var bss string
-
 // The instance name of this running service instance
 var serviceName string
 
@@ -99,7 +95,7 @@ func (n HSMNotification) String() string {
 }
 
 // Init initializes constants and state for this module.
-func Init(restRetry int, restTimeout int, hsmURL string, bssURL string, svcName string) error {
+func Init(restRetry int, restTimeout int, hsmURL string, svcName string) error {
 	serviceName = svcName
 	// Setup connection to HSM Vault
 	log.Printf("Connecting to HSM secure store (Vault)...")
@@ -119,47 +115,7 @@ func Init(restRetry int, restTimeout int, hsmURL string, bssURL string, svcName 
 
 	hsm = hsmURL
 
-	bss = bssURL
-
 	return nil
-}
-
-// NotifyHSMDiscovered is a goroutine for asynchronously sending a discovered node notification to HSM
-func NotifyHSMDiscovered(mac string, xname *string, node storage.MacState) {
-	// Notify HSM and clear local state
-
-	// Send credentials to Vault instead of HSM
-	if len(node.Username) > 0 {
-		cred := compcreds.CompCredentials{
-			Xname:    *xname,
-			URL:      "",
-			Username: node.Username,
-			Password: node.Password,
-		}
-		err := hcs.StoreCompCred(cred)
-		if err != nil {
-			// If we fail to store credentials in vault, we'll lose the
-			// credentials and the component endpoints associated with
-			// them will still be successfully in the database.
-			log.Printf("Failed to store credentials for %s in Vault - %s", *xname, err)
-		}
-	}
-
-	// No longer include User and Password (set to blank) to signal HSM to pull from Vault
-	payload := HSMNotification{
-		ID:                 *xname,
-		FQDN:               *xname,
-		IPAddress:          node.IPAddress,
-		User:               "", // blank to pull from Vault
-		Password:           "", // blank to pull from Vault
-		MACAddr:            mac,
-		RediscoverOnUpdate: true,
-	}
-
-	log.Printf("INFO: We discovered %s on %s port %s:\n\t",
-		*xname, node.SwitchName, node.SwitchPort)
-
-	NotifyHSMDiscoveredWithGeolocation(payload)
 }
 
 // NotifyHSMDiscoveredWithGeolocation performs the task of adding discovered items
@@ -204,35 +160,6 @@ func NotifyHSMDiscoveredWithGeolocation(payload HSMNotification) bool {
 	// TODO put error logic in switch stmt
 }
 
-// NotifyHSMRemoved is a goroutine for asynchronously sending a deleted node notification to HSM
-func NotifyHSMRemoved(node string) {
-	SetHSMXnameEnabled(node, false)
-
-	go notifyBSSResync()
-}
-
-// notifyBSSResync is a goroutine for asynchronously sending a notification to
-//    HSM for clearing local state
-func notifyBSSResync() {
-	// Notify HSM and clear local state
-	log.Printf("DEBUG: POST to %s", bss+"/hosts")
-
-	resp, err := rClient.
-		R().
-		SetHeader(base.USERAGENT, serviceName).
-		Post(bss + "/hosts")
-	if err != nil {
-		log.Printf("WARNING: Unable to request BSS resync: %v", err)
-	}
-
-	if resp.StatusCode() != http.StatusNoContent {
-		log.Printf("WARNING: An error occurred forcing BSS resync: %s %v",
-			resp.Status(), resp)
-	}
-	// TODO put error logic in switch stmt
-	log.Printf("INFO: Successfully forced BSS resync")
-}
-
 func SetHSMXnameEnabled(xname string, enabled bool) (bool, error) {
 	payload := HSMNotification{
 		ID:      xname,
@@ -263,50 +190,6 @@ func SetHSMXnameEnabled(xname string, enabled bool) (bool, error) {
 		return false, rerr
 	}
 	return true, nil
-}
-
-/*
-Returns if the named node is listed as present in HSM or not
-*/
-func QueryHSMState(xname string) (bool, error) {
-	log.Printf("DEBUG: GET from %s/Inventory/RedfishEndpoints/%s", hsm, xname)
-
-	resp, err := rClient.R().
-		SetHeader(base.USERAGENT, serviceName).
-		Get(hsm + "/Inventory/RedfishEndpoints/" + xname)
-	if err != nil {
-		log.Printf("WARNING: Unable to get information for %s: %v", xname, err)
-		return false, err
-	}
-
-	bodyBytes := resp.Body()
-
-	if resp.StatusCode() == http.StatusOK {
-		hmsn := new(HSMNotification)
-		err := json.Unmarshal(bodyBytes, hmsn)
-		if err != nil {
-			log.Printf("WARNING: Unable to unmarshal data on %s: %v", xname, err)
-			return false, err
-		}
-		if hmsn.Enabled != nil && *(hmsn.Enabled) != true {
-			// Requested xname is present in HSM, but not enabled
-			log.Printf("DEBUG: %s is not present in HSM", xname)
-			return false, nil
-		} else {
-			// Requested xname is present and enabled OR the enabled flag is not present
-			log.Printf("DEBUG: %s is present in HSM", xname)
-			return true, nil
-		}
-	} else if resp.StatusCode() == http.StatusNotFound {
-		log.Printf("DEBUG: %s is not present in HSM", xname)
-		return false, nil
-	}
-
-	// else ...
-	strbody := string(resp.Body())
-	log.Printf("WARNING: Error occurred looking up %s in HSM (code %d):\n%s", xname, resp.StatusCode(), string(strbody))
-	rerr := errors.New("Unable to retrieve status from HSM: " + string(resp.StatusCode()) + "\n" + strbody)
-	return false, rerr
 }
 
 // HSMCreateComponent performs the task of adding a discovered component
