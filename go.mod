@@ -9,6 +9,6 @@ require (
 	github.com/Cray-HPE/hms-securestorage v1.12.2
 	github.com/gorilla/mux v1.8.0
 	github.com/mitchellh/mapstructure v1.3.3
-	golang.org/x/sys v0.0.0-20200923182605-d9f96fdee20d // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	gopkg.in/resty.v1 v1.12.0
 )
