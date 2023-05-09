@@ -381,51 +381,59 @@ func switchFromSLSReturn(gh GenericHardware) (*Switch, error) {
 
 func GetSwitches() (*(map[string](Switch)), error) {
 
-	log.Printf("TRACE: GET from http://" + slsURL + "/" + SLS_SEARCH_HARDWARE_ENDPOINT + "?type=comptype_mgmt_switch&class=River")
-	url := "http://" + slsURL + "/" + SLS_SEARCH_HARDWARE_ENDPOINT + "?type=comptype_mgmt_switch&class=River"
-	req, qerr := http.NewRequest("GET", url, nil)
-	if qerr != nil {
-		log.Printf("WARNING: Can't create new HTTP request: %v", qerr)
-		return nil, qerr
-	}
-	base.SetHTTPUserAgent(req, serviceName)
-	resp, err := slsClient.Do(req)
-
-	if err != nil {
-		log.Printf("WARNING: Cannot retrieve switch list: %s", err)
-		return nil, err
-	}
-
-	strbody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Printf("WARNING: Couldn't read response body: %s", err)
-		return nil, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		log.Printf("WARNING: Invalid response from SLS. Code: %d, message: %s", resp.StatusCode, strbody)
-		return nil, errors.New("SLS returned " + resp.Status)
-	}
-
-	var retGH []GenericHardware
-	// Okay, got body ok
-	err = json.Unmarshal(strbody, &retGH)
-	if err != nil {
-		log.Printf("WARNING: Unable to unmarshall response from SLS: %s", err)
-		return nil, err
-	}
-
 	ret := make(map[string]Switch)
 
-	for _, gh := range retGH {
-		tmpSwitch, err := switchFromSLSReturn(gh)
+	switchTypes := []string{
+		"comptype_mgmt_switch",
+		"comptype_hl_switch",
+		"comptype_cdu_mgmt_switch",
+	}
+
+	for _, switchType := range switchTypes {
+		log.Printf("TRACE: GET from http://" + slsURL + "/" + SLS_SEARCH_HARDWARE_ENDPOINT + "?type=" + switchType)
+		url := "http://" + slsURL + "/" + SLS_SEARCH_HARDWARE_ENDPOINT + "?type=" + switchType
+		req, qerr := http.NewRequest("GET", url, nil)
+		if qerr != nil {
+			log.Printf("WARNING: Can't create new HTTP request: %v", qerr)
+			return nil, qerr
+		}
+		base.SetHTTPUserAgent(req, serviceName)
+		resp, err := slsClient.Do(req)
 
 		if err != nil {
-			log.Printf("WARNING: Error unpacking switch object: %s", err)
+			log.Printf("WARNING: Cannot retrieve switch list: %s", err)
 			return nil, err
 		}
 
-		ret[gh.Xname] = *tmpSwitch
+		strbody, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Printf("WARNING: Couldn't read response body: %s", err)
+			return nil, err
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != 200 {
+			log.Printf("WARNING: Invalid response from SLS. Code: %d, message: %s", resp.StatusCode, strbody)
+			return nil, errors.New("SLS returned " + resp.Status)
+		}
+
+		var retGH []GenericHardware
+		// Okay, got body ok
+		err = json.Unmarshal(strbody, &retGH)
+		if err != nil {
+			log.Printf("WARNING: Unable to unmarshall response from SLS: %s", err)
+			return nil, err
+		}
+
+		for _, gh := range retGH {
+			tmpSwitch, err := switchFromSLSReturn(gh)
+
+			if err != nil {
+				log.Printf("WARNING: Error unpacking switch object: %s", err)
+				return nil, err
+			}
+
+			ret[gh.Xname] = *tmpSwitch
+		}
 	}
 
 	return &ret, nil

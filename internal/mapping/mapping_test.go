@@ -259,11 +259,18 @@ func BaseRTFunc(r *http.Request) *http.Response {
 	switch r.URL.Path {
 	case "/" + SLS_BASE_VERSION + "/" + SLS_SEARCH_HARDWARE_ENDPOINT:
 		switch r.URL.Query().Encode() {
-		case "class=River&type=comptype_mgmt_switch":
+		case "type=comptype_mgmt_switch":
 			return &http.Response{
 				StatusCode: 200,
 				// Send mock response for rpath
 				Body:   ioutil.NopCloser(bytes.NewBufferString(payloadSLSSwitches)),
+				Header: make(http.Header),
+			}
+		case "type=comptype_hl_switch": fallthrough
+		case "type=comptype_cdu_mgmt_switch":
+			return &http.Response{
+				StatusCode: 200,
+				// Send mock response for rpath
 				Header: make(http.Header),
 			}
 		case "parent=x0c0w0&type=comptype_mgmt_switch_connector":
