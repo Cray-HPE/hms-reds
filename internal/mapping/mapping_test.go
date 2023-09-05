@@ -331,7 +331,7 @@ func Test_SLS_GetSwitches(t *testing.T) {
 
 	switches, err := GetSwitches()
 	if err != nil {
-		t.Fatalf("Unexpected error retreiving switches: %s", err)
+		t.Fatalf("Unexpected error retrieving switches: %s", err)
 	}
 
 	if _, ok := (*switches)["x0c0w0"]; !ok {

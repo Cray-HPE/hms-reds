@@ -25,7 +25,6 @@ package smdclient
 import (
 	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -172,7 +171,7 @@ func SetHSMXnameEnabled(xname string, enabled bool) (bool, error) {
 	} else {
 		strbody := string(resp.Body())
 		log.Printf("WARNING: An error occurred patching %s: %s %v", xname, resp.Status(), string(strbody))
-		rerr := errors.New("Unable to patch information for " + xname + " to HSM: " + string(resp.StatusCode()) + "\n" + string(strbody))
+		rerr := fmt.Errorf("unable to patch information for %s to HSM: %d \n %s", xname, resp.StatusCode, strbody)
 		return false, rerr
 	}
 	return true, nil

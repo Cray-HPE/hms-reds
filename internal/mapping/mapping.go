@@ -402,6 +402,7 @@ func GetSwitches() (*(map[string](Switch)), error) {
 		err = json.Unmarshal(strbody, &retGH)
 		if err != nil {
 			log.Printf("WARNING: Unable to unmarshall response from SLS: %s", err)
+			log.Println(string(strbody))
 			return nil, err
 		}
 
