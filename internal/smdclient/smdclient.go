@@ -171,7 +171,7 @@ func SetHSMXnameEnabled(xname string, enabled bool) (bool, error) {
 	} else {
 		strbody := string(resp.Body())
 		log.Printf("WARNING: An error occurred patching %s: %s %v", xname, resp.Status(), string(strbody))
-		rerr := fmt.Errorf("unable to patch information for %s to HSM: %d \n %s", xname, resp.StatusCode, strbody)
+		rerr := fmt.Errorf("unable to patch information for %s to HSM: %d \n %s", xname, resp.StatusCode(), strbody)
 		return false, rerr
 	}
 	return true, nil

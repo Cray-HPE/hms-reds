@@ -43,5 +43,4 @@ COPY vendor $GOPATH/src/github.com/Cray-HPE/hms-reds/vendor
 
 FROM base
 
-CMD ["sh", "-c", "go test -cover -v github.com/Cray-HPE/hms-reds/internal/mapping; \
-    go test -cover -v github.com/Cray-HPE/hms-reds/internal/model"]
+CMD ["sh", "-c", "go test -cover -v github.com/Cray-HPE/hms-reds/..."]

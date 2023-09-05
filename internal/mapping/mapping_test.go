@@ -26,7 +26,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"testing"
@@ -249,7 +249,7 @@ func BaseRTFunc(r *http.Request) *http.Response {
 		return &http.Response{
 			StatusCode: http.StatusInternalServerError,
 			// Send mock response for rpath
-			Body:   ioutil.NopCloser(bytes.NewBufferString("Missing or incorrect User-Agent header")),
+			Body:   io.NopCloser(bytes.NewBufferString("Missing or incorrect User-Agent header")),
 			Header: make(http.Header),
 		}
 	}
@@ -261,7 +261,7 @@ func BaseRTFunc(r *http.Request) *http.Response {
 			return &http.Response{
 				StatusCode: 200,
 				// Send mock response for rpath
-				Body:   ioutil.NopCloser(bytes.NewBufferString(payloadSLSSwitches)),
+				Body:   io.NopCloser(bytes.NewBufferString(payloadSLSSwitches)),
 				Header: make(http.Header),
 			}
 		case "type=comptype_hl_switch":
@@ -270,20 +270,21 @@ func BaseRTFunc(r *http.Request) *http.Response {
 			return &http.Response{
 				StatusCode: 200,
 				// Send mock response for rpath
+				Body:   io.NopCloser(bytes.NewBufferString("[]")), // TODO mock our real response.
 				Header: make(http.Header),
 			}
 		case "parent=x0c0w0&type=comptype_mgmt_switch_connector":
 			return &http.Response{
 				StatusCode: 200,
 				// Send mock response for rpath
-				Body:   ioutil.NopCloser(bytes.NewBufferString(payloadSLSSwitchPorts)),
+				Body:   io.NopCloser(bytes.NewBufferString(payloadSLSSwitchPorts)),
 				Header: make(http.Header),
 			}
 		case "parent=x0c0w0":
 			return &http.Response{
 				StatusCode: 200,
 				// Send mock response for rpath
-				Body:   ioutil.NopCloser(bytes.NewBufferString(payloadSLSSwitchPortByIFName)),
+				Body:   io.NopCloser(bytes.NewBufferString(payloadSLSSwitchPortByIFName)),
 				Header: make(http.Header),
 			}
 		}
@@ -291,14 +292,14 @@ func BaseRTFunc(r *http.Request) *http.Response {
 		return &http.Response{
 			StatusCode: 200,
 			// Send mock response for rpath
-			Body:   ioutil.NopCloser(bytes.NewBufferString(payloadSLSSwitchByName)),
+			Body:   io.NopCloser(bytes.NewBufferString(payloadSLSSwitchByName)),
 			Header: make(http.Header),
 		}
 	}
 
 	return &http.Response{
 		StatusCode: 404,
-		Body:       ioutil.NopCloser(bytes.NewBufferString("Unknown request for path " + r.URL.Path + ", query: " + r.URL.Query().Encode())),
+		Body:       io.NopCloser(bytes.NewBufferString("Unknown request for path " + r.URL.Path + ", query: " + r.URL.Query().Encode())),
 		Header:     make(http.Header),
 	}
 }
@@ -543,7 +544,7 @@ func TimedSwitchesRTFunc(r *http.Request) *http.Response {
 			return &http.Response{
 				StatusCode: 200,
 				// Send mock response for rpath
-				Body:   ioutil.NopCloser(bytes.NewBufferString(payloadTimedSLSSwitches0)),
+				Body:   io.NopCloser(bytes.NewBufferString(payloadTimedSLSSwitches0)),
 				Header: make(http.Header),
 			}
 		} else {
@@ -551,7 +552,7 @@ func TimedSwitchesRTFunc(r *http.Request) *http.Response {
 			return &http.Response{
 				StatusCode: 200,
 				// Send mock response for rpath
-				Body:   ioutil.NopCloser(bytes.NewBufferString(payloadTimedSLSSwitches1)),
+				Body:   io.NopCloser(bytes.NewBufferString(payloadTimedSLSSwitches1)),
 				Header: make(http.Header),
 			}
 		}
@@ -562,6 +563,7 @@ func TimedSwitchesRTFunc(r *http.Request) *http.Response {
 var callbackHitCount = 0
 
 func testCallback() {
+	log.Println("Test callback called!")
 	callbackHitCount++
 }
 
