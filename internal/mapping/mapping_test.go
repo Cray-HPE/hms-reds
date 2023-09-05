@@ -43,8 +43,6 @@ const SLS_BASE_URL = SLS_BASE_HOSTNAME + "/" + SLS_BASE_VERSION
 
 const INSTNAME = "MappingTest"
 
-var client *http.Client
-
 // RoundTrip method override
 type RTFunc func(req *http.Request) *http.Response
 
@@ -266,7 +264,8 @@ func BaseRTFunc(r *http.Request) *http.Response {
 				Body:   ioutil.NopCloser(bytes.NewBufferString(payloadSLSSwitches)),
 				Header: make(http.Header),
 			}
-		case "type=comptype_hl_switch": fallthrough
+		case "type=comptype_hl_switch":
+			fallthrough
 		case "type=comptype_cdu_mgmt_switch":
 			return &http.Response{
 				StatusCode: 200,
@@ -451,93 +450,6 @@ func Test_SLS_GetSwitchByName(t *testing.T) {
 	}
 	if x0c0w0.Address != expectedx0c0w0.Address {
 		t.Fatalf("x0c0w0 has wrong address.  Expected \"%s\" got \"%s\"", expectedx0c0w0.Address, x0c0w0.Address)
-	}
-
-	switchQuitChan <- true
-	nodeQuitChan <- true
-}
-
-func Test_SLS_GetSwitchPorts(t *testing.T) {
-	ConfigureSLSMode(SLS_BASE_URL, NewTestClient(BaseRTFunc), &mss, compcreds, INSTNAME)
-
-	switchQuitChan := make(chan bool)
-	go WatchSLSNewSwitches(switchQuitChan)
-
-	nodeQuitChan := make(chan bool)
-	go WatchSLSNewManagementNodes(nodeQuitChan)
-
-	switchPorts, err := GetSwitchPorts("x0c0w0")
-	if err != nil {
-		t.Fatalf("Unexpected error retreiving switches: %s", err)
-	}
-
-	if len(*switchPorts) == 0 {
-		t.Fatalf("Couldn't find x0c0w0 in returned switch list")
-	}
-
-	expectedx0c0w0j1 := SwitchPort{
-		Id:     0,
-		IfName: "GigabitEthernet 1/31",
-		PeerID: "x0c0s1b0",
-	}
-
-	actualx0c0w0j1 := (*switchPorts)[0]
-
-	if expectedx0c0w0j1.IfName != actualx0c0w0j1.IfName {
-		t.Fatalf("x0c0w0j1 has wrong IfName.  Expected %s, got %s", expectedx0c0w0j1.IfName, actualx0c0w0j1.IfName)
-	}
-	if expectedx0c0w0j1.PeerID != actualx0c0w0j1.PeerID {
-		t.Fatalf("x0c0w0j1 has wrong PeerID.  Expected %s, got %s", expectedx0c0w0j1.PeerID, actualx0c0w0j1.PeerID)
-	}
-
-	expectedx0c0w0j2 := SwitchPort{
-		Id:     0,
-		IfName: "GigabitEthernet 1/32",
-		PeerID: "x0c0s2b0",
-	}
-
-	actualx0c0w0j2 := (*switchPorts)[1]
-
-	if expectedx0c0w0j2.IfName != actualx0c0w0j2.IfName {
-		t.Fatalf("x0c0w0j2 has wrong IfName.  Expected %s, got %s", expectedx0c0w0j2.IfName, actualx0c0w0j2.IfName)
-	}
-	if expectedx0c0w0j2.PeerID != actualx0c0w0j2.PeerID {
-		t.Fatalf("x0c0w0j2 has wrong PeerID.  Expected %s, got %s", expectedx0c0w0j2.PeerID, actualx0c0w0j2.PeerID)
-	}
-
-	switchQuitChan <- true
-	nodeQuitChan <- true
-}
-
-func Test_SLS_GetSwitchPortByIFName(t *testing.T) {
-	ConfigureSLSMode(SLS_BASE_URL, NewTestClient(BaseRTFunc), &mss, compcreds, INSTNAME)
-
-	switchQuitChan := make(chan bool)
-	go WatchSLSNewSwitches(switchQuitChan)
-
-	nodeQuitChan := make(chan bool)
-	go WatchSLSNewManagementNodes(nodeQuitChan)
-
-	switchPort, err := GetSwitchPortByIFName("x0c0w0", `GigabitEthernet 1/31`)
-	if err != nil {
-		t.Fatalf("Unexpected error retreiving switches: %s", err)
-	}
-
-	if switchPort == nil {
-		t.Fatalf("No data returned by SLS")
-	}
-
-	expected := SwitchPort{
-		Id:     0,
-		IfName: "GigabitEthernet 1/31",
-		PeerID: "x0c0s1b0",
-	}
-
-	if expected.IfName != switchPort.IfName {
-		t.Fatalf("returned result has wrong IfName.  Expected %s, got %s", expected.IfName, switchPort.IfName)
-	}
-	if expected.PeerID != switchPort.PeerID {
-		t.Fatalf("returned result has wrong PeerID.  Expected %s, got %s", expected.PeerID, switchPort.PeerID)
 	}
 
 	switchQuitChan <- true

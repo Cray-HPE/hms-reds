@@ -62,12 +62,7 @@ const SLS_SEARCH_HARDWARE_ENDPOINT = "search/hardware"
 
 var MGMTSwitchConnectorRegex = regexp.MustCompile("^x([0-9]{1,4})c([0-7])w([0-9]+)j([1-9][0-9]*)$")
 
-var ErrNoSuchObject = errors.New("No object found with that name")
-
-// A singleton for the master mapping datastructure.  Uninitialized until
-// somebody loads a map
-var mapping *privMapping = nil
-var lock sync.Mutex
+var ErrNoSuchObject = errors.New("no object found with that name")
 
 // A slice of functions to call whenever a new mapping is uploaded
 var cbFuncs []CallbackFunc
@@ -78,19 +73,6 @@ var serviceName string
 
 /* INTERNAL data structures for storing the mapping */
 // Switch port has no private stuff
-
-type privSwitch struct {
-	Switch
-	Ports       []SwitchPort             `json:"ports"`
-	PortsByName map[string](*SwitchPort) `json:"-"`
-	PortsByID   map[int](*SwitchPort)    `json:"-"`
-}
-
-type privMapping struct {
-	Mapping
-	Switches       []privSwitch             `json:"switches"`
-	SwitchesByName map[string](*privSwitch) `json:"-"`
-}
 
 /* External data structures */
 type SwitchPort struct {
@@ -205,7 +187,7 @@ func WatchSLSNewSwitches(quitChan chan bool) {
 			if newSwitches != nil {
 				log.Printf("TRACE: New switches: %v", *newSwitches)
 			}
-			for key, _ := range *newSwitches {
+			for key := range *newSwitches {
 				log.Printf("TRACE: Checking if switch %s in new", key)
 				if _, ok := switches[key]; !ok {
 					// new switch
@@ -219,7 +201,7 @@ func WatchSLSNewSwitches(quitChan chan bool) {
 				switchesCopy[key] = val
 			}
 
-			for key, _ := range *newSwitches {
+			for key := range *newSwitches {
 				delete(switchesCopy, key)
 			}
 			if len(switchesCopy) > 0 {
@@ -262,7 +244,6 @@ func SetStorage(ss sstorage.SecureStorage) {
 	}
 
 	compcreds = compcredentials.NewCompCredStore("secret/hms-creds", ss)
-	return
 }
 
 func switchFromSLSReturn(gh GenericHardware) (*Switch, error) {
@@ -475,96 +456,6 @@ func GetSwitchByName(switchName string) (*Switch, error) {
 		return nil, err
 	}
 	return switchFromSLSReturn(retGH)
-}
-
-func GetSwitchPorts(switchName string) (*([](SwitchPort)), error) {
-	log.Printf("TRACE: GET from http://" + slsURL + "/" + SLS_SEARCH_HARDWARE_ENDPOINT + "?parent=" + switchName + "&type=comptype_mgmt_switch_connector")
-	url := "http://" + slsURL + "/" + SLS_SEARCH_HARDWARE_ENDPOINT + "?parent=" + switchName + "&type=comptype_mgmt_switch_connector"
-	req, qerr := http.NewRequest("GET", url, nil)
-	if qerr != nil {
-		log.Printf("WARNING: Can't create new HTTP request: %v", qerr)
-		return nil, qerr
-	}
-	base.SetHTTPUserAgent(req, serviceName)
-	resp, err := slsClient.Do(req)
-
-	if err != nil {
-		log.Printf("WARNING: Cannot retrieve switch port for %s: %s", switchName, err)
-		return nil, err
-	}
-
-	strbody, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Printf("WARNING: Couldn't read response body: %s", err)
-		return nil, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		log.Printf("WARNING: Invalid response from SLS. Code: %d, message: %s", resp.StatusCode, strbody)
-		return nil, errors.New("SLS returned " + resp.Status)
-	}
-
-	var retGH []GenericHardware
-	// Okay, got body ok
-	err = json.Unmarshal(strbody, &retGH)
-	if err != nil {
-		log.Printf("WARNING: Unable to unmarshall response from SLS: %s", err)
-		return nil, err
-	}
-
-	// Need to turn this list of children into something useful...
-	ret := new([](SwitchPort))
-	for i, child := range retGH {
-		log.Printf("ExtraProperties are: %v", child.ExtraPropertiesRaw)
-		thisPort := SwitchPort{
-			Id:     i,
-			IfName: child.ExtraPropertiesRaw.(map[string]interface{})["VendorName"].(string),
-		}
-		for _, peer := range child.ExtraPropertiesRaw.(map[string]interface{})["NodeNics"].([]interface{}) {
-			tpeer := peer.(string)
-			if base.GetHMSType(tpeer) == base.NodeBMC {
-				thisPort.PeerID = tpeer
-				break
-			}
-		}
-		if thisPort.PeerID != "" {
-			(*ret) = append(*ret, thisPort)
-		}
-	}
-
-	return ret, nil
-}
-
-func GetSwitchPortByIFName(switchName string, port string) (*SwitchPort, error) {
-	ports, err := GetSwitchPorts(switchName)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, item := range *ports {
-		if item.IfName == port {
-			return &item, nil
-		}
-	}
-
-	return nil, errors.New("No port " + port + " on switch " + switchName)
-}
-
-// A function that translates from (switch, port) to the xname of the device
-// on the other end.
-// Arguments:
-// - switchName (string): the name of the switch to look up
-// - port (string): the name of the port on the switch to look up
-// Returns:
-// - *string: The xname of the device or nil if an error occurred
-// - error: any error that occurred during lookup (or nil)
-func SwitchPortToXname(switchName string, port string) (*string, error) {
-	tport, err := GetSwitchPortByIFName(switchName, port)
-
-	if err != nil {
-		return nil, err
-	}
-	return &(tport.PeerID), nil
 }
 
 func OnNewMapping(cb CallbackFunc) {
