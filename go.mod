@@ -1,6 +1,6 @@
 module github.com/Cray-HPE/hms-reds
 
-go 1.23
+go 1.16
 
 require (
 	github.com/Cray-HPE/hms-base/v2 v2.2.0
