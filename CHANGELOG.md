@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update image and module dependencies
 - Various code changes to accomodate module updates
 - Resolved build warnings in Dockerfiles and docker compose files
+- Upgrade Go to v1.23
 
 ## [2.1.0] - 2023-05-09
 
