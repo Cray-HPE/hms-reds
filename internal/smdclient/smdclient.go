@@ -110,8 +110,7 @@ func Init(restRetry int, restTimeout int, hsmURL string, svcName string) error {
 	rClient = resty.New().
 		SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true}).
 		SetTimeout(time.Duration(time.Duration(restTimeout) * time.Second)).
-		SetRetryCount(restRetry). // This uses a default backoff algorithm
-		SetRESTMode()             // This enables automatic unmarshalling to JSON and no redirects
+		SetRetryCount(restRetry) // This uses a default backoff algorithm
 
 	hsm = hsmURL
 
