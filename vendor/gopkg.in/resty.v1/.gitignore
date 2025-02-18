@@ -25,7 +25,4 @@ _testmain.go
 
 coverage.out
 coverage.txt
-
-# Exclude IDE folders
-.idea/*
-.vscode/*
+go.sum

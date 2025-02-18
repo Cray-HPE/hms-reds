@@ -34,7 +34,7 @@ import (
 	base "github.com/Cray-HPE/hms-base/v2"
 	compcreds "github.com/Cray-HPE/hms-compcredentials"
 	sstorage "github.com/Cray-HPE/hms-securestorage"
-	"github.com/go-resty/resty/v2"
+	"gopkg.in/resty.v1"
 )
 
 // HSMNotification is used to send newly discovered devices to HSM
@@ -110,7 +110,8 @@ func Init(restRetry int, restTimeout int, hsmURL string, svcName string) error {
 	rClient = resty.New().
 		SetTLSClientConfig(&tls.Config{InsecureSkipVerify: true}).
 		SetTimeout(time.Duration(time.Duration(restTimeout) * time.Second)).
-		SetRetryCount(restRetry) // This uses a default backoff algorithm
+		SetRetryCount(restRetry). // This uses a default backoff algorithm
+		SetRESTMode()             // This enables automatic unmarshalling to JSON and no redirects
 
 	hsm = hsmURL
 

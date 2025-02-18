@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2024 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
+// Copyright (c) 2015-2019 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
 // resty source code and usage is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -6,7 +6,8 @@ package resty
 
 import (
 	"bytes"
-	"errors"
+	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"log"
@@ -21,62 +22,9 @@ import (
 	"strings"
 )
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
-// Logger interface
-//_______________________________________________________________________
-
-// Logger interface is to abstract the logging from Resty. Gives control to
-// the Resty users, choice of the logger.
-type Logger interface {
-	Errorf(format string, v ...interface{})
-	Warnf(format string, v ...interface{})
-	Debugf(format string, v ...interface{})
-}
-
-func createLogger() *logger {
-	l := &logger{l: log.New(os.Stderr, "", log.Ldate|log.Lmicroseconds)}
-	return l
-}
-
-var _ Logger = (*logger)(nil)
-
-type logger struct {
-	l *log.Logger
-}
-
-func (l *logger) Errorf(format string, v ...interface{}) {
-	l.output("ERROR RESTY "+format, v...)
-}
-
-func (l *logger) Warnf(format string, v ...interface{}) {
-	l.output("WARN RESTY "+format, v...)
-}
-
-func (l *logger) Debugf(format string, v ...interface{}) {
-	l.output("DEBUG RESTY "+format, v...)
-}
-
-func (l *logger) output(format string, v ...interface{}) {
-	if len(v) == 0 {
-		l.l.Print(format)
-		return
-	}
-	l.l.Printf(format, v...)
-}
-
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
-// Rate Limiter interface
-//_______________________________________________________________________
-
-type RateLimiter interface {
-	Allow() bool
-}
-
-var ErrRateLimitExceeded = errors.New("rate limit exceeded")
-
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // Package Helper methods
-//_______________________________________________________________________
+//___________________________________
 
 // IsStringEmpty method tells whether given string is empty or not
 func IsStringEmpty(str string) bool {
@@ -113,20 +61,32 @@ func IsXMLType(ct string) bool {
 	return xmlCheck.MatchString(ct)
 }
 
-// Unmarshalc content into object from JSON or XML
-func Unmarshalc(c *Client, ct string, b []byte, d interface{}) (err error) {
+// Unmarshal content into object from JSON or XML
+// Deprecated: kept for backward compatibility
+func Unmarshal(ct string, b []byte, d interface{}) (err error) {
 	if IsJSONType(ct) {
-		err = c.JSONUnmarshal(b, d)
+		err = json.Unmarshal(b, d)
 	} else if IsXMLType(ct) {
-		err = c.XMLUnmarshal(b, d)
+		err = xml.Unmarshal(b, d)
 	}
 
 	return
 }
 
-//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// Unmarshalc content into object from JSON or XML
+func Unmarshalc(c *Client, ct string, b []byte, d interface{}) (err error) {
+	if IsJSONType(ct) {
+		err = c.JSONUnmarshal(b, d)
+	} else if IsXMLType(ct) {
+		err = xml.Unmarshal(b, d)
+	}
+
+	return
+}
+
+//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
 // RequestLog and ResponseLog type
-//_______________________________________________________________________
+//___________________________________
 
 // RequestLog struct is used to collected information from resty request
 // instance for debug logging. It sent to request log callback before resty
@@ -144,20 +104,18 @@ type ResponseLog struct {
 	Body   string
 }
 
+//‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+// Package Unexported methods
+//___________________________________
+
 // way to disable the HTML escape as opt-in
-func jsonMarshal(c *Client, r *Request, d interface{}) (*bytes.Buffer, error) {
-	if !r.jsonEscapeHTML || !c.jsonEscapeHTML {
+func jsonMarshal(c *Client, r *Request, d interface{}) ([]byte, error) {
+	if !r.jsonEscapeHTML {
+		return noescapeJSONMarshal(d)
+	} else if !c.jsonEscapeHTML {
 		return noescapeJSONMarshal(d)
 	}
-
-	data, err := c.JSONMarshal(d)
-	if err != nil {
-		return nil, err
-	}
-
-	buf := acquireBuffer()
-	_, _ = buf.Write(data)
-	return buf, nil
+	return c.JSONMarshal(d)
 }
 
 func firstNonEmpty(v ...string) string {
@@ -169,6 +127,10 @@ func firstNonEmpty(v ...string) string {
 	return ""
 }
 
+func getLogger(w io.Writer) *log.Logger {
+	return log.New(w, "RESTY ", log.LstdFlags)
+}
+
 var quoteEscaper = strings.NewReplacer("\\", "\\\\", `"`, "\\\"")
 
 func escapeQuotes(s string) string {
@@ -177,19 +139,9 @@ func escapeQuotes(s string) string {
 
 func createMultipartHeader(param, fileName, contentType string) textproto.MIMEHeader {
 	hdr := make(textproto.MIMEHeader)
-
-	var contentDispositionValue string
-	if IsStringEmpty(fileName) {
-		contentDispositionValue = fmt.Sprintf(`form-data; name="%s"`, param)
-	} else {
-		contentDispositionValue = fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
-			param, escapeQuotes(fileName))
-	}
-	hdr.Set("Content-Disposition", contentDispositionValue)
-
-	if !IsStringEmpty(contentType) {
-		hdr.Set(hdrContentTypeKey, contentType)
-	}
+	hdr.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
+		escapeQuotes(param), escapeQuotes(fileName)))
+	hdr.Set("Content-Type", contentType)
 	return hdr
 }
 
@@ -207,11 +159,11 @@ func writeMultipartFormFile(w *multipart.Writer, fieldName, fileName string, r i
 	// Auto detect actual multipart content type
 	cbuf := make([]byte, 512)
 	size, err := r.Read(cbuf)
-	if err != nil && err != io.EOF {
+	if err != nil {
 		return err
 	}
 
-	partWriter, err := w.CreatePart(createMultipartHeader(fieldName, fileName, http.DetectContentType(cbuf[:size])))
+	partWriter, err := w.CreatePart(createMultipartHeader(fieldName, fileName, http.DetectContentType(cbuf)))
 	if err != nil {
 		return err
 	}
@@ -285,13 +237,7 @@ func functionName(i interface{}) string {
 }
 
 func acquireBuffer() *bytes.Buffer {
-	buf := bufPool.Get().(*bytes.Buffer)
-	if buf.Len() == 0 {
-		buf.Reset()
-		return buf
-	}
-	bufPool.Put(buf)
-	return new(bytes.Buffer)
+	return bufPool.Get().(*bytes.Buffer)
 }
 
 func releaseBuffer(buf *bytes.Buffer) {
@@ -301,30 +247,24 @@ func releaseBuffer(buf *bytes.Buffer) {
 	}
 }
 
-func backToBufPool(buf *bytes.Buffer) {
-	if buf != nil {
-		bufPool.Put(buf)
-	}
-}
-
 func closeq(v interface{}) {
 	if c, ok := v.(io.Closer); ok {
-		silently(c.Close())
+		sliently(c.Close())
 	}
 }
 
-func silently(_ ...interface{}) {}
+func sliently(_ ...interface{}) {}
 
-func composeHeaders(c *Client, r *Request, hdrs http.Header) string {
-	str := make([]string, 0, len(hdrs))
+func composeHeaders(hdrs http.Header) string {
+	var str []string
 	for _, k := range sortHeaderKeys(hdrs) {
-		str = append(str, "\t"+strings.TrimSpace(fmt.Sprintf("%25s: %s", k, strings.Join(hdrs[k], ", "))))
+		str = append(str, fmt.Sprintf("%25s: %s", k, strings.Join(hdrs[k], ", ")))
 	}
 	return strings.Join(str, "\n")
 }
 
 func sortHeaderKeys(hdrs http.Header) []string {
-	keys := make([]string, 0, len(hdrs))
+	var keys []string
 	for key := range hdrs {
 		keys = append(keys, key)
 	}
@@ -338,52 +278,4 @@ func copyHeaders(hdrs http.Header) http.Header {
 		nh[k] = v
 	}
 	return nh
-}
-
-func wrapErrors(n error, inner error) error {
-	if inner == nil {
-		return n
-	}
-	if n == nil {
-		return inner
-	}
-	return &restyError{
-		err:   n,
-		inner: inner,
-	}
-}
-
-type restyError struct {
-	err   error
-	inner error
-}
-
-func (e *restyError) Error() string {
-	return e.err.Error()
-}
-
-func (e *restyError) Unwrap() error {
-	return e.inner
-}
-
-type noRetryErr struct {
-	err error
-}
-
-func (e *noRetryErr) Error() string {
-	return e.err.Error()
-}
-
-func wrapNoRetryErr(err error) error {
-	if err != nil {
-		err = &noRetryErr{err: err}
-	}
-	return err
-}
-
-func unwrapNoRetryErr(err error) error {
-	if e, ok := err.(*noRetryErr); ok {
-		err = e.err
-	}
-	return err
 }
