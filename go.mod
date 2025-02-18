@@ -1,6 +1,8 @@
 module github.com/Cray-HPE/hms-reds
 
-go 1.16
+go 1.23
+
+toolchain go1.23.5
 
 require (
 	github.com/Cray-HPE/hms-base/v2 v2.2.0
@@ -29,6 +31,7 @@ require (
 	github.com/pierrec/lz4 v2.0.5+incompatible // indirect
 	github.com/ryanuber/go-glob v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
+	github.com/stretchr/testify v1.7.2 // indirect
 	golang.org/x/crypto v0.0.0-20190404164418-38d8ce5564a5 // indirect
 	golang.org/x/net v0.0.0-20190620200207-3b0461eec859 // indirect
 	golang.org/x/sys v0.30.0 // indirect
