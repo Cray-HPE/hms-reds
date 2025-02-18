@@ -26,6 +26,10 @@ github.com/go-jose/go-jose/v4
 github.com/go-jose/go-jose/v4/cipher
 github.com/go-jose/go-jose/v4/json
 github.com/go-jose/go-jose/v4/jwt
+# github.com/go-resty/resty/v2 v2.16.5
+## explicit; go 1.20
+github.com/go-resty/resty/v2
+github.com/go-resty/resty/v2/shellescape
 # github.com/gorilla/mux v1.8.1
 ## explicit; go 1.20
 github.com/gorilla/mux
@@ -103,6 +107,3 @@ golang.org/x/text/unicode/norm
 # golang.org/x/time v0.10.0
 ## explicit; go 1.18
 golang.org/x/time/rate
-# gopkg.in/resty.v1 v1.12.0
-## explicit
-gopkg.in/resty.v1

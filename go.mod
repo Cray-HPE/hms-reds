@@ -10,10 +10,10 @@ require (
 	github.com/Cray-HPE/hms-compcredentials v1.13.1-0.20250218165734-ab82ae2b4168
 	github.com/Cray-HPE/hms-securestorage v1.15.1-0.20250218164114-1ff7317deeec
 	github.com/Cray-HPE/hms-xname v1.4.0
+	github.com/go-resty/resty/v2 v2.16.5
 	github.com/gorilla/mux v1.8.1
 	github.com/hashicorp/vault/api v1.16.0
 	github.com/mitchellh/mapstructure v1.5.0
-	gopkg.in/resty.v1 v1.12.0
 )
 
 require (

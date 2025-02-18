@@ -34,7 +34,7 @@ import (
 	base "github.com/Cray-HPE/hms-base/v2"
 	compcreds "github.com/Cray-HPE/hms-compcredentials"
 	sstorage "github.com/Cray-HPE/hms-securestorage"
-	"gopkg.in/resty.v1"
+	"github.com/go-resty/resty/v2"
 )
 
 // HSMNotification is used to send newly discovered devices to HSM
