@@ -35,6 +35,7 @@ import (
 	base "github.com/Cray-HPE/hms-base/v2"
 	compcredentials "github.com/Cray-HPE/hms-compcredentials"
 	sstorage "github.com/Cray-HPE/hms-securestorage"
+	"github.com/hashicorp/vault/api"
 )
 
 const SLS_BASE_HOSTNAME = "cray-sls"
@@ -72,6 +73,22 @@ func (ms MockSS) Store(key string, value interface{}) error {
 	ms.kvstore[key] = string(jsonVal)
 	return nil
 }
+
+func (ms MockSS) StoreWithData(key string, value interface{}, output interface{}) error {
+	jsonVal, err := json.Marshal(value)
+	if err != nil {
+		return err
+	}
+	ms.kvstore[key] = string(jsonVal)
+	secret := api.Secret{Data: value.(map[string]interface{})}
+	secretBytes, err := json.Marshal(secret)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(secretBytes, output)
+	return err
+}
+
 func (ms MockSS) Lookup(key string, output interface{}) error {
 	jVal, ok := ms.kvstore[key]
 	if !ok {
@@ -80,6 +97,7 @@ func (ms MockSS) Lookup(key string, output interface{}) error {
 	err := json.Unmarshal([]byte(jVal), output)
 	return err
 }
+
 func (ms MockSS) Delete(key string) error {
 	if _, ok := ms.kvstore[key]; !ok {
 		return errors.New("Key not found")
@@ -87,6 +105,7 @@ func (ms MockSS) Delete(key string) error {
 	delete(ms.kvstore, key)
 	return nil
 }
+
 func (ms MockSS) LookupKeys(keyPath string) ([]string, error) { return nil, nil }
 
 var mss sstorage.SecureStorage = MockSS{

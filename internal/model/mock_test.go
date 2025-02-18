@@ -2,7 +2,7 @@ package model
 
 // MIT License
 //
-// (C) Copyright [2019, 2021] Hewlett Packard Enterprise Development LP
+// (C) Copyright [2019,2021,2025] Hewlett Packard Enterprise Development LP
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
 // copy of this software and associated documentation files (the "Software"),
@@ -23,6 +23,7 @@ package model
 // OTHER DEALINGS IN THE SOFTWARE.
 
 import (
+	"github.com/hashicorp/vault/api"
 	"github.com/mitchellh/mapstructure"
 )
 
@@ -40,15 +41,25 @@ func (kv KvMock) Store(key string, value interface{}) error {
 	kv.storage[key] = value
 	return nil
 }
+
+func (kv KvMock) StoreWithData(key string, value interface{}, output interface{}) error {
+	kv.storage[key] = value
+	secret := api.Secret{ Data: value.(map[string]interface{}) }
+	err := mapstructure.Decode(&secret, output)
+	return err
+}
+
 func (kv KvMock) Lookup(key string, output interface{}) error {
 	value := kv.storage[key]
 	err := mapstructure.Decode(value, output)
 	return err
 }
+
 func (kv KvMock) Delete(key string) error {
 	delete(kv.storage, key)
 	return nil
 }
+
 func (kv KvMock) LookupKeys(keyPath string) (keys []string, err error) {
 	return
 }
