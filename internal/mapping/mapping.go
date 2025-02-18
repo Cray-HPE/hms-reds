@@ -38,6 +38,7 @@ import (
 
 	"github.com/Cray-HPE/hms-reds/internal/model"
 	"github.com/Cray-HPE/hms-reds/internal/smdclient"
+	"github.com/Cray-HPE/hms-xname/xnametypes"
 
 	base "github.com/Cray-HPE/hms-base/v2"
 	compcredentials "github.com/Cray-HPE/hms-compcredentials"
@@ -127,7 +128,7 @@ type GenericHardware struct {
 	Xname              string       `json:"Xname"`
 	Type               string       `json:"Type"`
 	Class              string       `json:"Class"`
-	TypeString         base.HMSType `json:"TypeString"`
+	TypeString         xnametypes.HMSType `json:"TypeString"`
 	ExtraPropertiesRaw interface{}  `json:"ExtraProperties"`
 }
 
@@ -522,7 +523,7 @@ func GetSwitchPorts(switchName string) (*([](SwitchPort)), error) {
 		}
 		for _, peer := range child.ExtraPropertiesRaw.(map[string]interface{})["NodeNics"].([]interface{}) {
 			tpeer := peer.(string)
-			if base.GetHMSType(tpeer) == base.NodeBMC {
+			if xnametypes.GetHMSType(tpeer) == xnametypes.NodeBMC {
 				thisPort.PeerID = tpeer
 				break
 			}
