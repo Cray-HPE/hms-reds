@@ -50,8 +50,8 @@ RUN mkdir -p /etc/reds
 
 # Now build
 RUN set -ex \
-    && go build -v -i github.com/Cray-HPE/hms-reds/cmd/reds \
-    && go build -v -i github.com/Cray-HPE/hms-reds/cmd/vault_loader
+    && go build -v github.com/Cray-HPE/hms-reds/cmd/reds \
+    && go build -v github.com/Cray-HPE/hms-reds/cmd/vault_loader
 
 ### Final Stage ###
 
