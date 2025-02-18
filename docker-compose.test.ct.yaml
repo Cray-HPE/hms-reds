@@ -1,5 +1,3 @@
-version: '3.7'
-
 networks:
   reds:
 
@@ -41,7 +39,7 @@ services:
 
   vault:
     hostname: vault
-    image: artifactory.algol60.net/docker.io/library/vault:1.5.5
+    image: artifactory.algol60.net/docker.io/library/vault:1.6.1
     environment:
       - VAULT_DEV_ROOT_TOKEN_ID=hms
       - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
@@ -51,7 +49,7 @@ services:
     networks:
       - reds
   vault-kv-enabler:
-    image: artifactory.algol60.net/csm-docker/stable/vault-kv-enabler:1.13.4
+    image: artifactory.algol60.net/csm-docker/stable/vault-kv-enabler:1.25.0
     environment:
       - VAULT_ADDR=http://vault:8200
       - VAULT_TOKEN=hms
@@ -75,7 +73,7 @@ services:
     networks:
       - reds
   cray-smd-init:
-    image: artifactory.algol60.net/csm-docker/stable/cray-smd:1.48.0
+    image: artifactory.algol60.net/csm-docker/stable/cray-smd:2.33.0
     environment:
       - SMD_DBHOST=postgres
       - SMD_DBPORT=5432
@@ -85,7 +83,7 @@ services:
       - reds
     command: /entrypoint.sh smd-init
   cray-smd:
-    image: artifactory.algol60.net/csm-docker/stable/cray-smd:1.48.0
+    image: artifactory.algol60.net/csm-docker/stable/cray-smd:2.33.0
     environment:
       - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
@@ -127,7 +125,7 @@ services:
     networks:
       - reds
   cray-hms-hmcollector:
-    image: artifactory.algol60.net/csm-docker/stable/hms-hmcollector:2.12.4
+    image: artifactory.algol60.net/csm-docker/stable/hms-hmcollector:2.36.0
     environment:
       - LOG_LEVEL=TRACE
       - SM_URL=http://cray-smd:27779
@@ -190,7 +188,7 @@ services:
     networks:
       - reds
   cray-sls-init:
-    image: artifactory.algol60.net/csm-docker/stable/cray-sls:1.16.0
+    image: artifactory.algol60.net/csm-docker/stable/cray-sls:2.7.0
     command: ["sls-init"]
     environment:
       - POSTGRES_HOST=sls-postgres
@@ -201,7 +199,7 @@ services:
     networks:
       - reds
   cray-sls:
-    image: artifactory.algol60.net/csm-docker/stable/cray-sls:1.16.0
+    image: artifactory.algol60.net/csm-docker/stable/cray-sls:2.7.0
     environment:
       - POSTGRES_HOST=cray-sls-postgres
       - DBOPTS=sslmode=disable
